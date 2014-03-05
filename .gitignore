@@ -1,0 +1,16 @@
+# Can ignore specific files
+*.sdf
+*.opensdf
+*.obj
+*.suo
+
+# Can also ignore all directories and files in a directory.
+.Debug/
+bin/
+Debug/
+ipch/
+plants/
+Release/
+Win32/
+x64/
+
