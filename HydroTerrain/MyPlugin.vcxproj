@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>LSystemMaya</ProjectName>
+    <ProjectName>HydroTerrainMaya</ProjectName>
     <ProjectGuid>{681412B0-F197-4A2F-9263-DEA2E8690146}</ProjectGuid>
     <RootNamespace>MyPlugin</RootNamespace>
   </PropertyGroup>
