@@ -61,6 +61,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="PleaseDoNotBreak.txt" />
     <None Include="testing.txt" />
   </ItemGroup>
   <ItemGroup>
