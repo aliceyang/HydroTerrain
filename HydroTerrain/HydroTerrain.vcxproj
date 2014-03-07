@@ -62,6 +62,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="aliceTesting.txt" />
+    <None Include="PleaseDoNotBreak.txt" />
     <None Include="testing.txt" />
   </ItemGroup>
   <ItemGroup>
