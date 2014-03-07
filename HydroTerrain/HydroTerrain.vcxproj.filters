@@ -24,6 +24,9 @@
     <None Include="PleaseDoNotBreak.txt">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="aliceTesting2.txt">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseNode.h">
