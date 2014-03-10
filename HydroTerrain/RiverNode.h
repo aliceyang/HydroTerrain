@@ -17,12 +17,12 @@ public:
 	RiverNode();
 	~RiverNode();
 
-	void setParent(BaseNode parentNode);
+	void setParent(RiverNode* parentNode);
 
 private:
 	bool isCandidate;
 	RIVER_TYPE_T river_type;
-	BaseNode parent;
+	RiverNode* parent;
 //	vector<RiverNode> children;
 
 

@@ -10,7 +10,7 @@ RiverNode::~RiverNode()
 
 }
 
-void RiverNode::setParent(BaseNode parentNode)
+void RiverNode::setParent(RiverNode* parentNode)
 {
-	
+	parent = parentNode;
 }
