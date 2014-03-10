@@ -1,4 +1,4 @@
-#include <stdio.h>
+/*#include <stdio.h>
 #include <math.h>
 #include <iostream>
 #include "LSystem.h"
@@ -18,4 +18,12 @@ int main(int argc, char **argv)
         system.process(i, branches);
     }
     return 0;      
+}
+*/
+#include "RiverNode.h"
+#include "TerrainNode.h"
+
+void main( int argc, const char* argv[] )
+{
+	printf( "\nHello World\n\n" );
 }

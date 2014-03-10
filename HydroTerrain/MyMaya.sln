@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MyMaya", "MyPlugin.vcxproj", "{681412B0-F197-4A2F-9263-DEA2E8690146}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HydroTerrainMaya", "MyPlugin.vcxproj", "{681412B0-F197-4A2F-9263-DEA2E8690146}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LSystem", "MyExe.vcxproj", "{CAB3C288-5682-4E53-ACC8-243AD97F1623}"
 EndProject
@@ -43,7 +43,8 @@ Global
 		{CAB3C288-5682-4E53-ACC8-243AD97F1623}.ReleaseDebug|x64.Build.0 = Debug|Win32
 		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Debug|Win32.ActiveCfg = Debug|Win32
 		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Debug|Win32.Build.0 = Debug|Win32
-		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Debug|x64.ActiveCfg = Debug|Win32
+		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Debug|x64.ActiveCfg = Debug|x64
+		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Debug|x64.Build.0 = Debug|x64
 		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Release|Win32.ActiveCfg = Release|Win32
 		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Release|Win32.Build.0 = Release|Win32
 		{5872B19C-8902-46E6-9E4C-CC53CE2FB605}.Release|x64.ActiveCfg = Release|Win32
