@@ -109,13 +109,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="aliceTesting.txt" />
-    <None Include="aliceTesting2.txt" />
-    <None Include="PleaseDoNotBreak.txt" />
-    <None Include="testagain.txt" />
-    <None Include="testing.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="BaseNode.h" />
     <ClInclude Include="RiverNode.h" />
     <ClInclude Include="TerrainNode.h" />

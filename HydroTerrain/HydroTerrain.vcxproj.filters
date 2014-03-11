@@ -15,23 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="testing.txt">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="aliceTesting.txt">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="PleaseDoNotBreak.txt">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="aliceTesting2.txt">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="testagain.txt">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="BaseNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
