@@ -131,7 +131,7 @@ MStatus LSystemNode::initialize()
 	return MS::kSuccess;
 }
 
-// Called whenver an attribute, such as time, changes, and recomputes the output mesh
+// Called whenever an attribute, such as time, changes, and recomputes the output mesh
 MStatus LSystemNode::compute(const MPlug& plug, MDataBlock& data)
 {
 	MStatus returnStatus;
