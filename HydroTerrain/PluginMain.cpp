@@ -45,6 +45,7 @@ MStatus uninitializePlugin( MObject obj )
 	// Deregister Node
 	status = plugin.deregisterNode(LSystemNode::id);
 	CHECK_MSTATUS_AND_RETURN_IT(status);
+	return status;
 }
 
 
