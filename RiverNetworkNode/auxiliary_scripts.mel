@@ -1,0 +1,11 @@
+// Create CV curve and RiverNetworkNode and attach polyCube instances to CV points
+
+curve -d 3 -p -0.804395 0 3.839761 -p -4.436606 0 -1.112041 -p -0.872617 0 -6.199927 -p 5.704637 0 -1.333132 -p 8.327287 0 4.251603 -p 6.703227 0 7.576703 -p 4.675442 0 7.359606 -k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 4 -k 4 ;
+closeCurve -ch 1 -ps 1 -rpo 1 -bb 0.5 -bki 0 -p 0.1 "curve1";
+createNode RiverNetworkNode;
+connectAttr -f curve1.worldSpace[0] RiverNetworkNode1.inputCurve;
+
+polyCube;
+instancer;
+connectAttr pCube1.matrix instancer1.inputHierarchy[0];
+connectAttr RiverNetworkNode1.outputPoints instancer1.inputPoints;
