@@ -1,6 +1,8 @@
 #define MNoVersionString
 #define MNoPluginEntry
 
+#include <vector>
+
 #include "RiverNetworkNode.h"
 
 #include <maya/MFnPlugin.h>
@@ -8,6 +10,7 @@
 #include <maya/MPoint.h>
 #include <maya/MFloatPoint.h>
 #include <maya/MFloatPointArray.h>
+#include <maya/MPointArray.h>
 
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnTypedAttribute.h>
@@ -137,30 +140,68 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		// in the dependency graph, then this call will cause all upstream  
 		// connections to be evaluated so that the correct value is supplied.
 		// 
-		MDataHandle inputData = data.inputValue( inputCurve, &returnStatus );
+		MDataHandle inputCurveData = data.inputValue( inputCurve, &returnStatus );
+		McheckErr(returnStatus, "ERROR getting inputCurve data handle\n");
 
-		if( returnStatus != MS::kSuccess )
-			MGlobal::displayError( "Node RiverNetworkNode cannot get value\n" );
-		else
+		MObject curve = inputCurveData.asNurbsCurve();
+		MFnNurbsCurve curveFn (curve, &returnStatus); // Can also set as MItCurveCV
+		McheckErr(returnStatus, "ERROR creating curve function set\n");
+
+		// testing
+		double curveLength = curveFn.length();
+		cout << "DEBUG: CURVE LENGTH IS: " << curveLength << endl;
+
+		// Grab the CV points from the input curve
+		MPointArray cvs;
+		returnStatus = curveFn.getCVs(cvs, MSpace::kWorld);
+		McheckErr(returnStatus, "ERROR  in getting CVs\n");
+
+		std::vector<MPoint>riverNodes;
+
+		for (int i = 0; i < cvs.length(); i++)
 		{
-			// Read the input value from the handle.
-			//
-			float result = inputData.asFloat();
-
-			// Get a handle to the output attribute.  This is similar to the
-			// "inputValue" call above except that no dependency graph 
-			// computation will be done as a result of this call.
-			// 
-			MDataHandle outputHandle = data.outputValue( RiverNetworkNode::outputPoints );
-			// This just copies the input value through to the output.  
-			// 
-			outputHandle.set( result );
-			// Mark the destination plug as being clean.  This will prevent the
-			// dependency graph from repeating this calculation until an input 
-			// of this node changes.
-			// 
-			data.setClean(plug);
+			MPoint point = cvs[i];
+			riverNodes.push_back(cvs[i]);
+			cout << "Adding CV Point: " << point[0] << " " << point[1] << " " << point[2] << "\n" << endl;
 		}
+
+
+		// ************************
+		// TODO: EXPAND RIVER NODES
+		// ************************
+		
+
+
+		// Get a handle to the output attribute.  This is similar to the
+		// "inputValue" call above except that no dependency graph 
+		// computation will be done as a result of this call.
+		// 
+		MDataHandle outputHandle = data.outputValue( outputPoints );
+
+		MFnArrayAttrsData outputPointsAAD;
+		MObject outputPointsObj = outputPointsAAD.create(&returnStatus);
+		McheckErr(returnStatus, "ERROR creating output points object\n");
+
+		// Create vectors for position and id
+		MVectorArray positionArray = outputPointsAAD.vectorArray("position");
+		MDoubleArray idArray = outputPointsAAD.doubleArray("id");
+
+		// Loop through vector of expanded set of river nodes and output their positions
+		for (int i = 0; i < riverNodes.size(); i++)
+		{
+			MPoint currNode = riverNodes[i];
+			positionArray.append(MVector(currNode));
+			idArray.append(i);
+		}
+
+		outputHandle.setMObject(outputPointsObj);
+
+		// Mark the destination plug as being clean.  This will prevent the
+		// dependency graph from repeating this calculation until an input 
+		// of this node changes.
+		// 
+		data.setClean(plug);
+
 	} else {
 		return MS::kUnknownParameter;
 	}
