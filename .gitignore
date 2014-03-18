@@ -19,6 +19,7 @@ Win32/
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
+[Dd]ebug_2012/
 [Rr]elease/
 x64/
 build/
