@@ -1,0 +1,1 @@
+Code for the NVoronoi project was referenced from http://blog.ivank.net/fortunes-algorithm-and-implementation.html#impl_cpp
