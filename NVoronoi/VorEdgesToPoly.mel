@@ -1,0 +1,7 @@
+select "curve*";
+planarSrf -ch 1 -d 1 -ko 0 -tol 0 -rn 1 -po 1;
+polyCloseBorder;
+polyMergeVertex  -d 0.001 -am 1 -ch 1;
+DeleteHistory;
+select "curve*";
+delete;
