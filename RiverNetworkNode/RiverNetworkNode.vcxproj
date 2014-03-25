@@ -136,9 +136,15 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\HydroTerrain\RiverNode.h" />
+    <ClInclude Include="..\HydroTerrain\tree\tree.hpp" />
+    <ClInclude Include="..\HydroTerrain\tree\tree_util.hpp" />
+    <ClInclude Include="..\HydroTerrain\vec.h" />
     <ClInclude Include="RiverNetworkNode.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\HydroTerrain\RiverNode.cpp" />
+    <ClCompile Include="..\HydroTerrain\vec.cpp" />
     <ClCompile Include="pluginMain.cpp" />
     <ClCompile Include="RiverNetworkNode.cpp" />
   </ItemGroup>

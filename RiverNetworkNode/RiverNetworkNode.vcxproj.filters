@@ -29,9 +29,27 @@
     <ClCompile Include="RiverNetworkNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\HydroTerrain\RiverNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HydroTerrain\vec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RiverNetworkNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HydroTerrain\RiverNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HydroTerrain\tree\tree.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HydroTerrain\tree\tree_util.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HydroTerrain\vec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
