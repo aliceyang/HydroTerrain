@@ -110,13 +110,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BaseNode.h" />
-    <ClInclude Include="RiverNode.h" />
     <ClInclude Include="TerrainNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseNode.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="RiverNode.cpp" />
     <ClCompile Include="TerrainNode.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

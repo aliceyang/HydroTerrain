@@ -20,7 +20,6 @@ int main(int argc, char **argv)
     return 0;      
 }
 */
-#include "RiverNode.h"
 #include "TerrainNode.h"
 
 void main( int argc, const char* argv[] )

@@ -21,18 +21,12 @@
     <ClInclude Include="TerrainNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RiverNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BaseNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RiverNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TerrainNode.cpp">
