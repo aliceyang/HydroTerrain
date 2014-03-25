@@ -2,15 +2,22 @@
 
 RiverNode::RiverNode()
 {
-
+	pi = 4;
 }
 
-RiverNode::~RiverNode()
+RiverNode::RiverNode(int s)
 {
-
+	position = vec3(0,0,0);
+	pi = s;
 }
 
-void RiverNode::setParent(RiverNode* parentNode)
+RiverNode::RiverNode(vec3 p, int s)
 {
-	parent = parentNode;
+	position = p;
+	pi = s;
+}
+
+vec3 RiverNode::getPosition() const
+{
+	return position;
 }

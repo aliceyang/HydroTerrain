@@ -1,8 +1,9 @@
 #ifndef RIVERNODE_H
 #define RIVERNODE_H
 
-#include <vector>
-#include "BaseNode.h"
+#include <string>
+#include "vec.h"
+
 
 //sample river types, can be changed later...
 enum RIVER_TYPE_T {
@@ -11,21 +12,36 @@ enum RIVER_TYPE_T {
 	C
 };
 
-class RiverNode: public BaseNode
+// Contain class that holds all necessary info about a River Node
+class RiverNode
 {
 public:
 	RiverNode();
-	~RiverNode();
+	RiverNode(int s);
+	RiverNode(vec3 p, int s);
 
-	void setParent(RiverNode* parentNode);
+	~RiverNode(){};
+
+	vec3 getPosition() const;
 
 private:
+	// Alice TODO: getters/setters
+	int id;
+	vec3 position;
 	bool isCandidate;
+	float distToParent; // edge length
+	std::string name;
+	int pi; // priority index (Horton-Strahler number)
+	
 	RIVER_TYPE_T river_type;
-	RiverNode* parent;
-//	vector<RiverNode> children;
-
-
+	// phi: flow
 };
+
+
+// Override stream operator
+inline std::ostream& operator<<(std::ostream &strm, const RiverNode &r)
+{
+	return strm << "RiverNode:" << r.getPosition();
+}
 
 #endif
