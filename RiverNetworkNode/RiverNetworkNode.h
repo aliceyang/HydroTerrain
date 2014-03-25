@@ -2,9 +2,9 @@
 //
 //	Author: Alice Yang
 //
-//	River Network Node: This node is responsible for taking in a user-created CV curve as the 
-//	river contour curve, and outputs an array of locations for the newly expanded set of 
-//	river nodes
+//	River Network Node: This is a custom Maya node that is responsible for taking in a 
+//	user-created CV curve as the river contour curve, and outputs an array of locations 
+//	for the newly expanded set of river nodes
 //
 
 #ifndef _RiverNetworkNodeNode
