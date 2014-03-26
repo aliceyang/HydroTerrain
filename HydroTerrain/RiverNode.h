@@ -24,12 +24,11 @@ public:
 
 	vec3 getPosition() const;
 
-private:
 	// Alice TODO: getters/setters
 	int id;
 	vec3 position;
 	bool isCandidate;
-	float distToParent; // edge length
+	float e; // edge length (distance to parent)
 	std::string name;
 	int pi; // priority index (Horton-Strahler number)
 	
