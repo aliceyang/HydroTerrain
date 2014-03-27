@@ -151,9 +151,9 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		MFnNurbsCurve curveFn (curve, &returnStatus); // Can also set as MItCurveCV
 		McheckErr(returnStatus, "ERROR creating curve function set\n");
 
-		// testing
-		double curveLength = curveFn.length();
-		cout << "DEBUG: CURVE LENGTH IS: " << curveLength << endl;
+		// Sanity check
+		//double curveLength = curveFn.length();
+		//cout << "DEBUG: CURVE LENGTH IS: " << curveLength << endl;
 
 		// Grab the CV points from the input curve
 		MPointArray cvs;
@@ -192,7 +192,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		for (int i = 0; i < candidateNodes.size(); i++)
 		{
 			RiverNode currNode = candidateNodes[i];
-			if (currNode.position[1] < (z+zeta))
+			if (currNode.position[1] <= (z+zeta))
 			{
 				candidateNodesSubset.push_back(currNode);
 			}
@@ -205,6 +205,11 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		
 		// 2. NODE EXPANSION: Expand the candidate node Nx and perform geometric tests to verify
 		// that the new nodes {N} are comptible with the previously created ones
+		float pc, ps, pa;
+		pc = 0.2;
+		ps = 0.7;
+		pa = 0.1;
+
 
 
 
