@@ -23,8 +23,10 @@ public:
 	~RiverNode(){};
 
 	vec3 getPosition() const;
+	static bool compare_node_elevations(const RiverNode& x, const RiverNode& y);
+	static bool compare_node_priority_indices(const RiverNode& x, const RiverNode& y);
 
-	// Alice TODO: getters/setters
+public:
 	int id;
 	vec3 position;
 	bool isCandidate;

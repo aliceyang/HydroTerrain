@@ -35,3 +35,13 @@ vec3 RiverNode::getPosition() const
 {
 	return position;
 }
+
+bool RiverNode::compare_node_elevations(const RiverNode& x, const RiverNode& y)
+{
+	return x.position[1] < y.position[1];
+}
+
+bool RiverNode::compare_node_priority_indices(const RiverNode& x, const RiverNode& y)
+{
+	return x.pi < y.pi;
+}
