@@ -2,6 +2,10 @@
 #define MNoPluginEntry
 
 #include <vector>
+#include "vec.h"
+#include "RiverNode.h"
+#include "tree.hpp"
+#include "tree_util.hpp"
 
 #include "RiverNetworkNode.h"
 
@@ -156,20 +160,28 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		returnStatus = curveFn.getCVs(cvs, MSpace::kWorld);
 		McheckErr(returnStatus, "ERROR  in getting CVs\n");
 
-		std::vector<MPoint>riverNodes;
-
+		// Create the initial set of candidate nodes and add them as separate heads of a tree
+		// Algorithm creates coverage of input domain by a set of trees denoted as G
+		std::vector<RiverNode>candidateNodes;
+		tree<RiverNode>G;
+		tree<RiverNode>::iterator top;
+		top = G.begin();
+		
 		for (int i = 0; i < cvs.length(); i++)
 		{
-			MPoint point = cvs[i];
-			riverNodes.push_back(cvs[i]);
-			cout << "Adding CV Point: " << point[0] << " " << point[1] << " " << point[2] << "\n" << endl;
+			MPoint pos = cvs[i];
+			RiverNode r(vec3(pos.x, pos.y, pos.z));
+			candidateNodes.push_back(r);
+			G.insert(top, r);
 		}
 
+		// Sanity check
+		kptree::print_tree_tabbed(G, std::cout);
+
 
 		// ************************
-		// TODO: EXPAND RIVER NODES
+		// TODO: EXPAND NODES
 		// ************************
-		
 
 
 		// Get a handle to the output attribute.  This is similar to the
@@ -186,12 +198,24 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		MVectorArray positionArray = outputPointsAAD.vectorArray("position");
 		MDoubleArray idArray = outputPointsAAD.doubleArray("id");
 
-		// Loop through vector of expanded set of river nodes and output their positions
-		for (int i = 0; i < riverNodes.size(); i++)
+		// Traverse through all nodes in G tree and output their positions
+		int headCount = G.number_of_siblings(G.begin());
+		int headNum = 0;
+		int id = 0;
+		// Iterate through the head nodes and iterate through each head node's tree/children
+		for (tree<RiverNode>::sibling_iterator iRoot = G.begin(); iRoot != G.end(); ++iRoot, ++headNum)
 		{
-			MPoint currNode = riverNodes[i];
-			positionArray.append(MVector(currNode));
-			idArray.append(i);
+			tree<RiverNode>::iterator it = iRoot;
+			tree<RiverNode>::iterator end = G.end(iRoot);
+			while (it != end)
+			{
+				RiverNode currNode = *it;
+				MPoint currNodePos(currNode.position[0],currNode.position[1],currNode.position[2]);
+				positionArray.append(MVector(currNodePos));
+				idArray.append(id);
+				id++;
+				++it;
+			}
 		}
 
 		outputHandle.setMObject(outputPointsObj);
