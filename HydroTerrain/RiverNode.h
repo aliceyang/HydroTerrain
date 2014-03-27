@@ -18,8 +18,8 @@ class RiverNode
 public:
 	RiverNode();
 	RiverNode(int s);
+	RiverNode(vec3 p);
 	RiverNode(vec3 p, int s);
-
 	~RiverNode(){};
 
 	vec3 getPosition() const;
