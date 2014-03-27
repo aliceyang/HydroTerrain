@@ -160,13 +160,18 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		returnStatus = curveFn.getCVs(cvs, MSpace::kWorld);
 		McheckErr(returnStatus, "ERROR  in getting CVs\n");
 
-		// Create the initial set of candidate nodes and add them as separate heads of a tree
+		
+		// **************************
+		//  RIVER NETWORK GENERATION
+		// **************************
+
+		// Create the initial set of candidate nodes and add them as separate heads in a tree
 		// Algorithm creates coverage of input domain by a set of trees denoted as G
 		std::vector<RiverNode>candidateNodes;
 		tree<RiverNode>G;
 		tree<RiverNode>::iterator top;
 		top = G.begin();
-		
+
 		for (int i = 0; i < cvs.length(); i++)
 		{
 			MPoint pos = cvs[i];
@@ -175,13 +180,38 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 			G.insert(top, r);
 		}
 
-		// Sanity check
-		kptree::print_tree_tabbed(G, std::cout);
+		// 1. NODE SELECTION: Choose a node Nx to expand from the list of candidate nodes X
+
+		// 1.1 Find the elevation z of the lowest located candidate
+		std::vector<RiverNode>::iterator lowestElevationCandidate = std::min_element(candidateNodes.begin(), candidateNodes.end(), RiverNode::compare_node_elevations);
+		float z = lowestElevationCandidate->position[1];
+		float zeta = 0;
+
+		// 1.2 Consider a subset of candidate nodes who's elevation is within the range [z, z + zeta]
+		std::vector<RiverNode> candidateNodesSubset;
+		for (int i = 0; i < candidateNodes.size(); i++)
+		{
+			RiverNode currNode = candidateNodes[i];
+			if (currNode.position[1] < (z+zeta))
+			{
+				candidateNodesSubset.push_back(currNode);
+			}
+		}
+
+		// 1.3 Choose from the subset the node Nx with the highest priority. 
+		std::vector<RiverNode>::iterator highestPriorityCandidate = std::max_element(candidateNodesSubset.begin(), candidateNodesSubset.end(), RiverNode::compare_node_priority_indices);
+		RiverNode selectedNode = *highestPriorityCandidate;
+		cout << "SelectedNode: " << selectedNode.position << endl;
+		
+		// 2. NODE EXPANSION: Expand the candidate node Nx and perform geometric tests to verify
+		// that the new nodes {N} are comptible with the previously created ones
 
 
-		// ************************
-		// TODO: EXPAND NODES
-		// ************************
+
+		// 3. NODE CREATION: update the list of candidate nodes X
+		// X <- (X \ {Nx}) U {N}
+
+
 
 
 		// Get a handle to the output attribute.  This is similar to the
