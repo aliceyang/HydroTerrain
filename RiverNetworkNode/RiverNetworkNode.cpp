@@ -1,10 +1,7 @@
 #define MNoVersionString
 #define MNoPluginEntry
 
-#include <vector>
 #include "vec.h"
-#include "RiverNode.h"
-#include "tree.hpp"
 #include "tree_util.hpp"
 
 #include "RiverNetworkNode.h"
@@ -31,6 +28,12 @@
 #include <maya/MIOStream.h>
 #include <maya/MGlobal.h>
 #include <maya/MFnArrayAttrsData.h>
+
+// NOTE: THESE NEED TO BE IN INCREASING ORDER
+#define EXPANSION_PA_PROB 0.1 // Probability of Asymmetric Horton-Strahler junction
+#define EXPANSION_PC_PROB 0.2 // Probability of River Growth
+#define EXPANSION_PS_PROB 0.7 // Probability of Symmetric Horton-Strahler junction
+
 
 #define McheckErr(stat,msg)			\
 	if ( MS::kSuccess != stat ) {	\
@@ -176,47 +179,33 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		{
 			MPoint pos = cvs[i];
 			RiverNode r(vec3(pos.x, pos.y, pos.z));
+			r.node_type = CANDIDATE;
 			candidateNodes.push_back(r);
 			G.insert(top, r);
 		}
 
+		// ALICE TODO: While there are still candidate nodes, select one and expand. Expansion 
+		// cease when it is not possible anymore (i.e. run out of candidate nodes)
+
 		// 1. NODE SELECTION: Choose a node Nx to expand from the list of candidate nodes X
+		RiverNode candidateNode;
+		selectCandidateNode(candidateNodes, candidateNode);
 
-		// 1.1 Find the elevation z of the lowest located candidate
-		std::vector<RiverNode>::iterator lowestElevationCandidate = std::min_element(candidateNodes.begin(), candidateNodes.end(), RiverNode::compare_node_elevations);
-		float z = lowestElevationCandidate->position[1];
-		float zeta = 0;
-
-		// 1.2 Consider a subset of candidate nodes who's elevation is within the range [z, z + zeta]
-		std::vector<RiverNode> candidateNodesSubset;
-		for (int i = 0; i < candidateNodes.size(); i++)
-		{
-			RiverNode currNode = candidateNodes[i];
-			if (currNode.position[1] <= (z+zeta))
-			{
-				candidateNodesSubset.push_back(currNode);
-			}
-		}
-
-		// 1.3 Choose from the subset the node Nx with the highest priority. 
-		std::vector<RiverNode>::iterator highestPriorityCandidate = std::max_element(candidateNodesSubset.begin(), candidateNodesSubset.end(), RiverNode::compare_node_priority_indices);
-		RiverNode selectedNode = *highestPriorityCandidate;
-		cout << "SelectedNode: " << selectedNode.position << endl;
-		
-		// 2. NODE EXPANSION: Expand the candidate node Nx and perform geometric tests to verify
-		// that the new nodes {N} are comptible with the previously created ones
-		float pc, ps, pa;
-		pc = 0.2;
-		ps = 0.7;
-		pa = 0.1;
+			
+		// 2. NODE EXPANSION + CREATION: Expand the candidate node Nx and perform geometric 
+		// tests to verify that the new nodes {N} are comptible with the previously created 
+		// ones, then update the list of candidate nodes X: X <- (X \ {Nx}) U {N}
+		expandCandidateNode(candidateNode, G, candidateNodes);
 
 
 
 
-		// 3. NODE CREATION: update the list of candidate nodes X
-		// X <- (X \ {Nx}) U {N}
 
 
+
+
+		// SANITY CHECK
+		kptree::print_tree_tabbed(G, std::cout);
 
 
 		// Get a handle to the output attribute.  This is similar to the
@@ -247,7 +236,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 				RiverNode currNode = *it;
 				MPoint currNodePos(currNode.position[0],currNode.position[1],currNode.position[2]);
 				positionArray.append(MVector(currNodePos));
-				idArray.append(id);
+				idArray.append(id); // TODO ALICE Replace with node.myid?
 				id++;
 				++it;
 			}
@@ -266,4 +255,149 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 	}
 
 	return MS::kSuccess;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+double RiverNetworkNode::lookUpSlopeValue(const RiverNode &node)
+	// Takes the (x,z) coordinates of a node and looks up the corresponding river slope value on
+	// the user-provided river slope map. The value is calculated by taking the corners of the image
+	// map and fitting it to the bounding box of the CV curve.
+{
+	vec3 pos = node.position;
+	// ALICE TODO
+	return rand() % 3;
+}
+
+void RiverNetworkNode::selectCandidateNode(std::vector<RiverNode> &candidateNodes, RiverNode &candidateNode)
+	// 1. NODE SELECTION: Choose a node Nx to expand from the list of candidate nodes X
+{
+	// 1.1 Find the elevation z of the lowest located candidate
+	std::vector<RiverNode>::iterator lowestElevationCandidate = std::min_element(candidateNodes.begin(), candidateNodes.end(), RiverNode::compare_node_elevations);
+	double z = lowestElevationCandidate->position[1];
+	double zeta = 0;
+
+	// 1.2 Consider a subset of candidate nodes who's elevation is within the range [z, z + zeta]
+	std::vector<RiverNode> candidateNodesSubset;
+	for (int i = 0; i < candidateNodes.size(); i++)
+	{
+		RiverNode currNode = candidateNodes[i];
+		if (currNode.position[1] <= (z+zeta))
+		{
+			candidateNodesSubset.push_back(currNode);
+		}
+	}
+
+	// 1.3 Choose from the subset the node Nx with the highest priority. 
+	std::vector<RiverNode>::iterator highestPriorityCandidate = std::max_element(candidateNodesSubset.begin(), candidateNodesSubset.end(), RiverNode::compare_node_priority_indices);
+	candidateNode = *highestPriorityCandidate;
+	cout << "candidateNode: " << candidateNode.position << endl;
+}
+
+void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverNode> &G, std::vector<RiverNode> &candidateNodes)
+	// 2. NODE EXPANSION: Expand the candidate node Nx and perform geometric tests to verify
+	// that the new nodes {N} are comptible with the previously created ones
+{
+	if (candidateNode.pi == 1)
+	{
+		// Filling (ALICE TODO)
+		// For now lets just stop expansion and remove the candidate node from the vector
+		// http://stackoverflow.com/questions/39912/how-do-i-remove-an-item-from-a-stl-vector-with-a-certain-value
+		candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
+	}
+	else if (candidateNode.pi > 1)
+	{
+		EXPANSION_TYPE_T expansionType = chooseExpansionType();
+
+		// Asymmetric Horton-Strahler junction
+		if (expansionType == EXPANSION_PA)
+		{
+			// expand PA
+		}
+		// River growth (no branching)
+		if (expansionType == EXPANSION_PC)
+		{
+			// expand PC
+		}
+		// Symmetric Horton-Strahler junction ALICE TODO
+		if (expansionType == EXPANSION_PS)
+		{
+			RiverNode t;
+			t.node_type = TERMINAL;
+			t.pi = candidateNode.pi;
+			vec3 expansionDirection = vec3(0,0,0) - candidateNode.position;
+			double distToCenter = Distance(vec3(0,0,0), candidateNode.position);
+			double multiplier = 0.3;//t.edgeLength / distToCenter;
+			t.position = candidateNode.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3);
+			
+			// Append terminal node as child of candidate node
+			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode); // DEBUG THIS
+			tree<RiverNode>::iterator tNodeLoc;
+			if (candidateNodeLoc != G.end())
+			{
+				tNodeLoc = G.append_child(candidateNodeLoc, t);
+			}
+
+			// Skipping compatibility check. Normally B nodes should be geographically compatible before being added
+
+			RiverNode b1;
+			b1.node_type = INSTANTIATED;
+			b1.pi = candidateNode.pi - 1;
+			b1.position = t.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3) + vec3 (0, lookUpSlopeValue(t), 0);
+			// Append this node as child of terminal node
+			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
+			
+			RiverNode b2;
+			b2.node_type = INSTANTIATED;
+			b2.pi = candidateNode.pi - 1;
+			b2.position = t.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3) + vec3 (0, lookUpSlopeValue(t), 0);
+			// Append this node as child of terminal node
+			G.append_child(tNodeLoc, b2); // if (b2.isCompatible)
+			
+			// Update list of candidate nodes
+			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
+			candidateNodes.push_back(b2);
+			candidateNodes.push_back(b1);
+		}
+	}
+}
+
+EXPANSION_TYPE_T RiverNetworkNode::chooseExpansionType()
+{
+	// Probabilistically determines which type of river expansion to use
+	// http://www.vcskicks.com/random-element.php
+
+	float p = (rand() / static_cast<float>(RAND_MAX));
+	double cumulativePA = EXPANSION_PA_PROB;
+	double cumulativePC = EXPANSION_PA_PROB + EXPANSION_PC_PROB;
+	double cumulativePS = EXPANSION_PA_PROB + EXPANSION_PC_PROB + EXPANSION_PS_PROB;
+
+	EXPANSION_TYPE_T expansionType = EXPANSION_PA;
+
+	if ( p <= cumulativePA)
+		expansionType = EXPANSION_PA;
+	else if (p <= cumulativePC)
+		expansionType = EXPANSION_PC;
+	else if (p <= cumulativePS)
+		expansionType = EXPANSION_PS;
+
+	//return expansionType;
+	return EXPANSION_PS; // TESTING
 }
