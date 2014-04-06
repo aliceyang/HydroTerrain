@@ -82,12 +82,14 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Voronoi.cpp" />
+    <ClCompile Include="VoronoiManager.cpp" />
     <ClCompile Include="VParabola.cpp" />
     <ClCompile Include="VPoint.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="VEvent.h" />
     <ClInclude Include="Voronoi.h" />
+    <ClInclude Include="VoronoiManager.h" />
     <ClInclude Include="VParabola.h" />
   </ItemGroup>
   <ItemGroup>

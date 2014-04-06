@@ -27,6 +27,9 @@
     <ClCompile Include="VParabola.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VoronoiManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Voronoi.h">
@@ -36,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoronoiManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
