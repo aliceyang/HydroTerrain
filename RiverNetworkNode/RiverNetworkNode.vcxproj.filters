@@ -52,5 +52,8 @@
     <ClInclude Include="..\HydroTerrain\vec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\HydroTerrain\CImg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

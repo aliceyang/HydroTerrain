@@ -3,6 +3,7 @@
 
 #include "vec.h"
 #include "tree_util.hpp"
+#include "CImg.h"
 
 #include "RiverNetworkNode.h"
 
