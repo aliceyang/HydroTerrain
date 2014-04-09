@@ -1,7 +1,6 @@
 #define MNoVersionString
 #define MNoPluginEntry
 
-#include "vec.h"
 #include "tree_util.hpp"
 #include "CImg.h"
 
@@ -29,6 +28,8 @@
 #include <maya/MIOStream.h>
 #include <maya/MGlobal.h>
 #include <maya/MFnArrayAttrsData.h>
+
+using namespace cimg_library;
 
 // NOTE: THESE NEED TO BE IN INCREASING ORDER
 #define EXPANSION_PA_PROB 0.1 // Probability of Asymmetric Horton-Strahler junction
@@ -70,13 +71,17 @@ MTypeId     RiverNetworkNode::id( 0x1 );
 //The attributes of the node are initialized to NULL values.  
 MObject     RiverNetworkNode::inputCurve;        
 MObject     RiverNetworkNode::outputPoints;       
+MObject		RiverNetworkNode::riverSlopeFile;
 
+std::string RiverNetworkNode::riverSlopeFilePath;
+vec3 RiverNetworkNode::bboxMax;
+vec3 RiverNetworkNode::bboxMin;
 
 void* RiverNetworkNode::creator()
-//
-// The creator() method simply returns new instances of this node. The return type is a void* so
-// Maya can create node instances internally in a general fashion without having to know the return type.
-//
+	//
+	// The creator() method simply returns new instances of this node. The return type is a void* so
+	// Maya can create node instances internally in a general fashion without having to know the return type.
+	//
 {
 	return new RiverNetworkNode();
 }
@@ -84,16 +89,16 @@ void* RiverNetworkNode::creator()
 
 
 MStatus RiverNetworkNode::initialize()
-//
-//	Description:
-//		This method is called to create and initialize all of the attributes
-//      and attribute dependencies for this node type.  This is only called 
-//		once when the node type is registered with Maya.
-//
-//	Return Values:
-//		MS::kSuccess
-//		MS::kFailure
-//		
+	//
+	//	Description:
+	//		This method is called to create and initialize all of the attributes
+	//      and attribute dependencies for this node type.  This is only called 
+	//		once when the node type is registered with Maya.
+	//
+	//	Return Values:
+	//		MS::kSuccess
+	//		MS::kFailure
+	//		
 {
 	MFnTypedAttribute tAttr; // for nurbsCurve, outputPoints
 	MStatus returnStatus;
@@ -101,6 +106,10 @@ MStatus RiverNetworkNode::initialize()
 	// Create attributes
 	inputCurve = tAttr.create( "inputCurve", "in", MFnNurbsCurveData::kNurbsCurve, &returnStatus);
 	McheckErr(returnStatus, "ERROR creating RiverNetworkNode inputCurve attribute\n");
+	MAKE_INPUT(tAttr);
+
+	riverSlopeFile = tAttr.create("riverSlopeFile", "rs", MFnData::kString, &returnStatus);
+	McheckErr(returnStatus, "ERROR creating RiverNetworkNode riverSlopeFile attribute\n");
 	MAKE_INPUT(tAttr);
 
 	outputPoints = tAttr.create( "outputPoints", "op", MFnArrayAttrsData::kDynArrayAttrs, &returnStatus);
@@ -111,6 +120,9 @@ MStatus RiverNetworkNode::initialize()
 	returnStatus = addAttribute( inputCurve );
 	McheckErr(returnStatus, "ERROR adding inputCurve attribute\n");
 
+	returnStatus = addAttribute(riverSlopeFile);
+	McheckErr(returnStatus, "ERROR adding riverSlopeFile attribute\n");
+
 	returnStatus = addAttribute( outputPoints );
 	McheckErr(returnStatus, "ERROR adding outputPoints attribute\n");
 
@@ -119,6 +131,9 @@ MStatus RiverNetworkNode::initialize()
 	// then be recomputed the next time the value of the output is requested.
 	// 
 	returnStatus = attributeAffects(inputCurve, outputPoints);
+	McheckErr(returnStatus, "ERROR in attributeAffects\n");
+
+	returnStatus = attributeAffects(riverSlopeFile, outputPoints);
 	McheckErr(returnStatus, "ERROR in attributeAffects\n");
 
 	return MS::kSuccess;
@@ -162,9 +177,44 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		// Grab the CV points from the input curve
 		MPointArray cvs;
 		returnStatus = curveFn.getCVs(cvs, MSpace::kWorld);
-		McheckErr(returnStatus, "ERROR  in getting CVs\n");
+		McheckErr(returnStatus, "ERROR in getting curve CVs\n");
 
-		
+		// Manually calculate the bounding box because Maya sucks
+		double minX, minY, minZ, maxX, maxY, maxZ;
+		MPoint firstPt = cvs[0];
+		minX = maxX = firstPt.x;
+		minY = maxY = firstPt.y;
+		minZ = maxZ = firstPt.z;
+
+		for(int i = 1; i < cvs.length(); i++)
+		{
+			MPoint pos = cvs[i];
+			if (pos.x < minX)
+				minX = pos.x;
+			if (pos.x > maxX)
+				maxX = pos.x;
+			if (pos.y < minY)
+				minY = pos.y;
+			if (pos.y > maxY)
+				maxY = pos.y;
+			if (pos.z < minZ)
+				minZ = pos.z;
+			if (pos.z > maxZ)
+				maxZ = pos.z;
+		}
+
+		bboxMin = vec3(minX, minY, minZ);
+		bboxMax = vec3(maxX, maxY, maxZ);
+
+
+		// Grab the river slope image file for the curve (hard-coded for now)
+		MDataHandle riverSlopeFileData = data.inputValue(riverSlopeFile, &returnStatus);
+		McheckErr(returnStatus, "ERROR getting riverSlopeFile data handle\n");
+		MString riverSlopeFileValue = riverSlopeFileData.asString();
+		riverSlopeFilePath = riverSlopeFileValue.asChar();
+		riverSlopeFilePath = "../HydroTerrain/img/grey.bmp"; // ALICE TODO remove this later
+
+
 		// **************************
 		//  RIVER NETWORK GENERATION
 		// **************************
@@ -192,17 +242,11 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		RiverNode candidateNode;
 		selectCandidateNode(candidateNodes, candidateNode);
 
-			
+
 		// 2. NODE EXPANSION + CREATION: Expand the candidate node Nx and perform geometric 
 		// tests to verify that the new nodes {N} are comptible with the previously created 
 		// ones, then update the list of candidate nodes X: X <- (X \ {Nx}) U {N}
 		expandCandidateNode(candidateNode, G, candidateNodes);
-
-
-
-
-
-
 
 
 		// SANITY CHECK
@@ -283,8 +327,27 @@ double RiverNetworkNode::lookUpSlopeValue(const RiverNode &node)
 	// map and fitting it to the bounding box of the CV curve.
 {
 	vec3 pos = node.position;
-	// ALICE TODO
-	return rand() % 3;
+	double ratioX, ratioZ;
+	int imgX, imgZ;
+	int imgWidth, imgHeight;
+
+	ratioX = (pos[0]-bboxMin[0])/(bboxMax[0]-bboxMin[0]);
+	ratioZ = (pos[2]-bboxMin[2])/(bboxMax[2]-bboxMin[2]);
+	
+	CImg<double> src("../HydroTerrain/img/grey.bmp"); // should source from riverSlopeFilePath
+	imgWidth = src.width();
+	imgHeight = src.height();
+
+	imgX = int(ratioX * imgWidth);
+	imgZ = int(ratioZ * imgHeight);
+
+	float r = src(imgX, imgZ, 0, 0); // last value is R from RGB, r ranges from 0 to 255
+
+	//CImgDisplay display(src);
+	//while (!display.is_closed())
+	//	display.wait();
+
+	return r/100.0; // normalize to a reasonable height
 }
 
 void RiverNetworkNode::selectCandidateNode(std::vector<RiverNode> &candidateNodes, RiverNode &candidateNode)
@@ -347,7 +410,7 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			double distToCenter = Distance(vec3(0,0,0), candidateNode.position);
 			double multiplier = 0.3;//t.edgeLength / distToCenter;
 			t.position = candidateNode.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3);
-			
+
 			// Append terminal node as child of candidate node
 			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode); // DEBUG THIS
 			tree<RiverNode>::iterator tNodeLoc;
@@ -364,14 +427,14 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			b1.position = t.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3) + vec3 (0, lookUpSlopeValue(t), 0);
 			// Append this node as child of terminal node
 			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
-			
+
 			RiverNode b2;
 			b2.node_type = INSTANTIATED;
 			b2.pi = candidateNode.pi - 1;
 			b2.position = t.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3) + vec3 (0, lookUpSlopeValue(t), 0);
 			// Append this node as child of terminal node
 			G.append_child(tNodeLoc, b2); // if (b2.isCompatible)
-			
+
 			// Update list of candidate nodes
 			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
 			candidateNodes.push_back(b2);

@@ -10,12 +10,15 @@
 #ifndef _RiverNetworkNodeNode
 #define _RiverNetworkNodeNode
 
+#include <string>
 #include <maya/MPxNode.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MTypeId.h> 
+#include <maya/MBoundingBox.h>
 #include <vector>
 #include "RiverNode.h"
 #include "tree.hpp"
+#include "vec.h"
 
 // Different expansion types for a River node
 enum EXPANSION_TYPE_T
@@ -24,7 +27,7 @@ enum EXPANSION_TYPE_T
 	EXPANSION_PS,
 	EXPANSION_PC
 };
- 
+
 class RiverNetworkNode : public MPxNode
 {
 public:
@@ -39,6 +42,11 @@ public:
 	static	MTypeId		id;
 	static  MObject		inputCurve;		// User-created CV curve as river contour
 	static  MObject		outputPoints;	// Outputs array of locations for newly expanded nodes
+	static	MObject		riverSlopeFile;
+
+	static vec3 bboxMin;
+	static vec3 bboxMax;
+	static std::string riverSlopeFilePath;
 
 protected:
 	void selectCandidateNode(std::vector<RiverNode> &candidateNodes, RiverNode &candidateNode);
