@@ -11,3 +11,19 @@ connectAttr pCube1.matrix instancer1.inputHierarchy[0];
 connectAttr RiverNetworkNode1.outputPoints instancer1.inputPoints;
 
 select RiverNetworkNode1
+
+
+
+
+
+
+// Other random stuff
+
+listAttr 
+getAttr curve1.boundingBoxMin
+
+select "curve*";
+float $asdf[]  = `getAttr curve1.boundingBoxMin`;
+print $asdf;
+float $fdsa[]  = `getAttr curve1.boundingBoxMax`;
+print $fdsa;
