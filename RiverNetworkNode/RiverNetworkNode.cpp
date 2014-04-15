@@ -248,7 +248,13 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		// ones, then update the list of candidate nodes X: X <- (X \ {Nx}) U {N}
 		expandCandidateNode(candidateNode, G, candidateNodes);
 
-
+		// TESTING
+		for (int i = 0; i < 10; i++)
+		{
+			selectCandidateNode(candidateNodes, candidateNode);
+			expandCandidateNode(candidateNode, G, candidateNodes);
+		}
+		
 		// SANITY CHECK
 		kptree::print_tree_tabbed(G, std::cout);
 
@@ -348,6 +354,43 @@ double RiverNetworkNode::lookUpSlopeValue(const RiverNode &node)
 	//	display.wait();
 
 	return r/100.0; // normalize to a reasonable height
+}
+
+vec2 RiverNetworkNode::lookUpGradientValue(const RiverNode &node)
+	// Takes the (x,z) coordinates of a node and calculates the local (x,z) gradient vector on
+	// the user-provided river slope map. The value is calculated by the surrounding 3x3 kernal
+{
+	vec3 pos = node.position;
+
+	double ratioX, ratioZ;
+	int imgX, imgZ;
+	int imgWidth, imgHeight;
+
+	ratioX = (pos[0]-bboxMin[0])/(bboxMax[0]-bboxMin[0]);
+	ratioZ = (pos[2]-bboxMin[2])/(bboxMax[2]-bboxMin[2]);
+
+	CImg<double> src("../HydroTerrain/img/grey.bmp"); // should source from riverSlopeFilePath
+	imgWidth = src.width();
+	imgHeight = src.height();
+
+	imgX = int(ratioX * imgWidth);
+	imgZ = int(ratioZ * imgHeight);
+
+	double gradX, gradZ;
+
+	// Calculate gradient in the X direction, with border check
+	if (imgX == 0 || imgX == imgWidth)
+		gradX = src(imgX, imgZ, 0, 0); // last value is R from RGB, r ranges from 0 to 255
+	else
+		gradX = src(imgX+1, imgZ, 0,0) - src(imgX-1, imgZ, 0,0);
+
+	// Calculate gradient in the Z direction, with border check
+	if (imgZ == 0 || imgZ == imgHeight)
+		gradZ = src(imgX, imgZ, 0, 0);
+	else
+		gradZ = src(imgX, imgZ+1, 0, 0) - src(imgX, imgZ-1, 0, 0);
+
+	return vec2 (gradX,gradZ);
 }
 
 void RiverNetworkNode::selectCandidateNode(std::vector<RiverNode> &candidateNodes, RiverNode &candidateNode)
