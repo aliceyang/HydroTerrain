@@ -51,8 +51,10 @@ public:
 protected:
 	void selectCandidateNode(std::vector<RiverNode> &candidateNodes, RiverNode &candidateNode);
 	void expandCandidateNode(RiverNode &candidateNode, tree<RiverNode> &G, std::vector<RiverNode> &candidateNodes);
-	double lookUpSlopeValue(const RiverNode &node);
-	vec2 lookUpGradientValue(const RiverNode &node);
+	double getSlopeValue(const RiverNode &node);
+	vec3 getSlopeVector(const RiverNode &node);
+	vec3 getGradientVector(const RiverNode &node);
+	vec3 getXZJitter();
 	EXPANSION_TYPE_T chooseExpansionType();
 };
 

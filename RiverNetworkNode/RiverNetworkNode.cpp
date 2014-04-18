@@ -206,6 +206,9 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		bboxMin = vec3(minX, minY, minZ);
 		bboxMax = vec3(maxX, maxY, maxZ);
 
+		// Verified correct
+		//std::cout << "bbMin: " << bboxMin << std::endl;
+		//std::cout << "bbMax " << bboxMax << std::endl;
 
 		// Grab the river slope image file for the curve (hard-coded for now)
 		MDataHandle riverSlopeFileData = data.inputValue(riverSlopeFile, &returnStatus);
@@ -249,11 +252,11 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		expandCandidateNode(candidateNode, G, candidateNodes);
 
 		// TESTING
-		for (int i = 0; i < 10; i++)
-		{
-			selectCandidateNode(candidateNodes, candidateNode);
-			expandCandidateNode(candidateNode, G, candidateNodes);
-		}
+		//for (int i = 0; i < 10; i++)
+		//{
+		//	selectCandidateNode(candidateNodes, candidateNode);
+		//	expandCandidateNode(candidateNode, G, candidateNodes);
+		//}
 		
 		// SANITY CHECK
 		kptree::print_tree_tabbed(G, std::cout);
@@ -276,7 +279,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		// Traverse through all nodes in G tree and output their positions
 		int headCount = G.number_of_siblings(G.begin());
 		int headNum = 0;
-		int id = 0;
+
 		// Iterate through the head nodes and iterate through each head node's tree/children
 		for (tree<RiverNode>::sibling_iterator iRoot = G.begin(); iRoot != G.end(); ++iRoot, ++headNum)
 		{
@@ -285,10 +288,10 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 			while (it != end)
 			{
 				RiverNode currNode = *it;
+
 				MPoint currNodePos(currNode.position[0],currNode.position[1],currNode.position[2]);
 				positionArray.append(MVector(currNodePos));
-				idArray.append(id); // TODO ALICE Replace with node.myid?
-				id++;
+				idArray.append(currNode.myId);
 				++it;
 			}
 		}
@@ -327,10 +330,11 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 
 
 
-double RiverNetworkNode::lookUpSlopeValue(const RiverNode &node)
+double RiverNetworkNode::getSlopeValue(const RiverNode &node)
 	// Takes the (x,z) coordinates of a node and looks up the corresponding river slope value on
 	// the user-provided river slope map. The value is calculated by taking the corners of the image
-	// map and fitting it to the bounding box of the CV curve.
+	// map and fitting it to the bounding box of the CV curve. River slope value defines the magnitude
+	// of variation from the given node.
 {
 	vec3 pos = node.position;
 	double ratioX, ratioZ;
@@ -340,25 +344,35 @@ double RiverNetworkNode::lookUpSlopeValue(const RiverNode &node)
 	ratioX = (pos[0]-bboxMin[0])/(bboxMax[0]-bboxMin[0]);
 	ratioZ = (pos[2]-bboxMin[2])/(bboxMax[2]-bboxMin[2]);
 	
-	CImg<double> src("../HydroTerrain/img/grey.bmp"); // should source from riverSlopeFilePath
-	imgWidth = src.width();
-	imgHeight = src.height();
+	CImg<double> src("../HydroTerrain/img/grey.bmp"); // TODO should source from riverSlopeFilePath
+	imgWidth = src.width() - 1; // convert to 0-indexed
+	imgHeight = src.height() - 1;
 
 	imgX = int(ratioX * imgWidth);
 	imgZ = int(ratioZ * imgHeight);
 
 	float r = src(imgX, imgZ, 0, 0); // last value is R from RGB, r ranges from 0 to 255
 
-	//CImgDisplay display(src);
-	//while (!display.is_closed())
-	//	display.wait();
+	std::cout << "imgWidth: " << imgWidth << " imgHeight: " << imgHeight << std::endl;
+	std::cout << "imgX: " << imgX << " imgZ: " << imgZ << std::endl;
+	std::cout << "slope value: " << r/100.0 << "\n" << std::endl;
 
 	return r/100.0; // normalize to a reasonable height
 }
 
-vec2 RiverNetworkNode::lookUpGradientValue(const RiverNode &node)
+
+
+vec3 RiverNetworkNode::getSlopeVector(const RiverNode &node)
+	// Returns a vec3 with the slope value as the y value, and 0 for x and z
+{
+	return vec3 (0, getSlopeValue(node), 0);
+}
+
+
+
+vec3 RiverNetworkNode::getGradientVector(const RiverNode &node)
 	// Takes the (x,z) coordinates of a node and calculates the local (x,z) gradient vector on
-	// the user-provided river slope map. The value is calculated by the surrounding 3x3 kernal
+	// the user-provided river slope map. The value is calculated by the surrounding 3x3 kernel
 {
 	vec3 pos = node.position;
 
@@ -370,28 +384,62 @@ vec2 RiverNetworkNode::lookUpGradientValue(const RiverNode &node)
 	ratioZ = (pos[2]-bboxMin[2])/(bboxMax[2]-bboxMin[2]);
 
 	CImg<double> src("../HydroTerrain/img/grey.bmp"); // should source from riverSlopeFilePath
-	imgWidth = src.width();
-	imgHeight = src.height();
+	imgWidth = src.width() - 1; // convert to 0-indexed
+	imgHeight = src.height() - 1;
 
 	imgX = int(ratioX * imgWidth);
 	imgZ = int(ratioZ * imgHeight);
 
 	double gradX, gradZ;
 
-	// Calculate gradient in the X direction, with border check
-	if (imgX == 0 || imgX == imgWidth)
-		gradX = src(imgX, imgZ, 0, 0); // last value is R from RGB, r ranges from 0 to 255
-	else
-		gradX = src(imgX+1, imgZ, 0,0) - src(imgX-1, imgZ, 0,0);
+	// Calculate gradient in the X direction, with border correction
+	if (imgX == 0)
+	{
+		imgX = 1;
+	}
+	if (imgX == imgWidth)
+	{
+		imgX = imgWidth - 1;
+	}
 
-	// Calculate gradient in the Z direction, with border check
-	if (imgZ == 0 || imgZ == imgHeight)
-		gradZ = src(imgX, imgZ, 0, 0);
-	else
-		gradZ = src(imgX, imgZ+1, 0, 0) - src(imgX, imgZ-1, 0, 0);
+	// Calculate gradient in the Z direction, with border correction
+	if (imgZ == 0)
+	{
+		imgZ = 1;
+	}
+	if (imgZ == imgHeight)
+	{
+		imgZ = imgHeight - 1;
+	}
 
-	return vec2 (gradX,gradZ);
+	std::cout << "corrected imgX, imgZ: " << imgX << ", " << imgZ << std::endl;
+
+	double xNext = src(imgX+1, imgZ, 0,0);
+	double xPrev = src(imgX-1, imgZ, 0,0);
+	double zNext = src(imgX, imgZ+1, 0, 0);
+	double zPrev = src(imgX, imgZ-1, 0, 0);
+
+	std::cout << "xNext, xPrev: " << xNext << ", " << xPrev << std::endl;
+	std::cout << "zNext, zPrev: " << zNext << ", " << zPrev << std::endl;
+
+	gradX = xNext - xPrev;
+	gradZ = zNext - zPrev;
+
+	std::cout << "(gradX, gradZ):" << gradX << " " << gradZ << "\n" << std::endl;
+
+	return vec3 (gradX, 0, gradZ);
 }
+
+
+
+vec3 RiverNetworkNode::getXZJitter()
+	// Returns a vec3 with small random values in X and Z fields
+{
+	//return vec3 (rand()%3, rand()%3, rand()%3);
+	return vec3 (0,0,0);
+}
+
+
 
 void RiverNetworkNode::selectCandidateNode(std::vector<RiverNode> &candidateNodes, RiverNode &candidateNode)
 	// 1. NODE SELECTION: Choose a node Nx to expand from the list of candidate nodes X
@@ -415,8 +463,10 @@ void RiverNetworkNode::selectCandidateNode(std::vector<RiverNode> &candidateNode
 	// 1.3 Choose from the subset the node Nx with the highest priority. 
 	std::vector<RiverNode>::iterator highestPriorityCandidate = std::max_element(candidateNodesSubset.begin(), candidateNodesSubset.end(), RiverNode::compare_node_priority_indices);
 	candidateNode = *highestPriorityCandidate;
-	cout << "candidateNode: " << candidateNode.position << endl;
+	cout << "candidateNode: " << candidateNode.position << "\n" << endl;
 }
+
+
 
 void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverNode> &G, std::vector<RiverNode> &candidateNodes)
 	// 2. NODE EXPANSION: Expand the candidate node Nx and perform geometric tests to verify
@@ -446,35 +496,35 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 		// Symmetric Horton-Strahler junction ALICE TODO
 		if (expansionType == EXPANSION_PS)
 		{
+			// Terminal Node
 			RiverNode t;
 			t.node_type = TERMINAL;
 			t.pi = candidateNode.pi;
-			vec3 expansionDirection = vec3(0,0,0) - candidateNode.position;
-			double distToCenter = Distance(vec3(0,0,0), candidateNode.position);
-			double multiplier = 0.3;//t.edgeLength / distToCenter;
-			t.position = candidateNode.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3);
+			vec3 expansionDirection_t = getGradientVector(candidateNode) + getSlopeVector(candidateNode) + getXZJitter();
+			t.position = candidateNode.position + expansionDirection_t;
 
 			// Append terminal node as child of candidate node
-			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode); // DEBUG THIS
+			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
 			tree<RiverNode>::iterator tNodeLoc;
-			if (candidateNodeLoc != G.end())
-			{
-				tNodeLoc = G.append_child(candidateNodeLoc, t);
-			}
+			tNodeLoc = G.append_child(candidateNodeLoc, t);
 
-			// Skipping compatibility check. Normally B nodes should be geographically compatible before being added
 
+			// Skipping compatibility check. Normally B nodes should be geographically compatible before being added ALICE TODO
+
+			// Symmetric River Nodes
 			RiverNode b1;
 			b1.node_type = INSTANTIATED;
-			b1.pi = candidateNode.pi - 1;
-			b1.position = t.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3) + vec3 (0, lookUpSlopeValue(t), 0);
+			b1.pi = t.pi - 1;
+			vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+			b1.position = t.position + expansionDirection_b1;
 			// Append this node as child of terminal node
 			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
 
 			RiverNode b2;
 			b2.node_type = INSTANTIATED;
-			b2.pi = candidateNode.pi - 1;
-			b2.position = t.position + multiplier * expansionDirection + vec3 (rand()%3, rand()%3, rand()%3) + vec3 (0, lookUpSlopeValue(t), 0);
+			b2.pi = t.pi - 1;
+			vec3 expansionDirection_b2 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+			b2.position = t.position + expansionDirection_b2;
 			// Append this node as child of terminal node
 			G.append_child(tNodeLoc, b2); // if (b2.isCompatible)
 
@@ -485,6 +535,8 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 		}
 	}
 }
+
+
 
 EXPANSION_TYPE_T RiverNetworkNode::chooseExpansionType()
 {
