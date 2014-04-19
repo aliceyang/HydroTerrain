@@ -252,11 +252,11 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		expandCandidateNode(candidateNode, G, candidateNodes);
 
 		// TESTING
-		//for (int i = 0; i < 10; i++)
-		//{
-		//	selectCandidateNode(candidateNodes, candidateNode);
-		//	expandCandidateNode(candidateNode, G, candidateNodes);
-		//}
+		for (int i = 0; i < 20; i++)
+		{
+			selectCandidateNode(candidateNodes, candidateNode);
+			expandCandidateNode(candidateNode, G, candidateNodes);
+		}
 		
 		// SANITY CHECK
 		kptree::print_tree_tabbed(G, std::cout);
@@ -436,8 +436,8 @@ vec3 RiverNetworkNode::getGradientVector(const RiverNode &node)
 vec3 RiverNetworkNode::getXZJitter()
 	// Returns a vec3 with small random values in X and Z fields
 {
-	//return vec3 (rand()%3, 0, rand()%3);
-	return vec3 (0,0,0);
+	return vec3 (rand()%3-1.5, 0, rand()%3-1.5);
+	//return vec3 (0,0,0);
 }
 
 
