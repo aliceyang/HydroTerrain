@@ -260,6 +260,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		
 		// SANITY CHECK
 		kptree::print_tree_tabbed(G, std::cout);
+		std::cout << "==================\n\n\n" << std::endl;
 
 
 		// Get a handle to the output attribute.  This is similar to the
@@ -395,29 +396,29 @@ vec3 RiverNetworkNode::getGradientVector(const RiverNode &node)
 	// Calculate gradient in the X direction, with border correction
 	if (imgX == 0)
 	{
-		imgX = 1;
+		imgX = 2;
 	}
 	if (imgX == imgWidth)
 	{
-		imgX = imgWidth - 1;
+		imgX = imgWidth - 2;
 	}
 
 	// Calculate gradient in the Z direction, with border correction
 	if (imgZ == 0)
 	{
-		imgZ = 1;
+		imgZ = 2;
 	}
 	if (imgZ == imgHeight)
 	{
-		imgZ = imgHeight - 1;
+		imgZ = imgHeight - 2;
 	}
 
 	std::cout << "corrected imgX, imgZ: " << imgX << ", " << imgZ << std::endl;
 
-	double xNext = src(imgX+1, imgZ, 0,0);
-	double xPrev = src(imgX-1, imgZ, 0,0);
-	double zNext = src(imgX, imgZ+1, 0, 0);
-	double zPrev = src(imgX, imgZ-1, 0, 0);
+	double xNext = src(imgX+2, imgZ, 0,0);
+	double xPrev = src(imgX-2, imgZ, 0,0);
+	double zNext = src(imgX, imgZ+2, 0, 0);
+	double zPrev = src(imgX, imgZ-2, 0, 0);
 
 	std::cout << "xNext, xPrev: " << xNext << ", " << xPrev << std::endl;
 	std::cout << "zNext, zPrev: " << zNext << ", " << zPrev << std::endl;
@@ -435,7 +436,7 @@ vec3 RiverNetworkNode::getGradientVector(const RiverNode &node)
 vec3 RiverNetworkNode::getXZJitter()
 	// Returns a vec3 with small random values in X and Z fields
 {
-	//return vec3 (rand()%3, rand()%3, rand()%3);
+	//return vec3 (rand()%3, 0, rand()%3);
 	return vec3 (0,0,0);
 }
 
