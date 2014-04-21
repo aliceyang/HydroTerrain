@@ -252,7 +252,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		expandCandidateNode(candidateNode, G, candidateNodes);
 
 		// TESTING
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 6; i++)
 		{
 			selectCandidateNode(candidateNodes, candidateNode);
 			expandCandidateNode(candidateNode, G, candidateNodes);
@@ -436,8 +436,8 @@ vec3 RiverNetworkNode::getGradientVector(const RiverNode &node)
 vec3 RiverNetworkNode::getXZJitter()
 	// Returns a vec3 with small random values in X and Z fields
 {
-	return vec3 (rand()%3-1.5, 0, rand()%3-1.5);
-	//return vec3 (0,0,0);
+	//return vec3 (rand()%3-1.5, 0, rand()%3-1.5);
+	return vec3 (0,0,0);
 }
 
 
@@ -487,14 +487,75 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 		// Asymmetric Horton-Strahler junction
 		if (expansionType == EXPANSION_PA)
 		{
-			// expand PA
+			// Terminal Node
+			RiverNode t;
+			t.node_type = TERMINAL;
+			t.pi = candidateNode.pi;
+			vec3 expansionDirection_t = getGradientVector(candidateNode) + getSlopeVector(candidateNode) + getXZJitter();
+			t.position = candidateNode.position + expansionDirection_t;
+
+			// Append terminal node as child of candidate node
+			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
+			tree<RiverNode>::iterator tNodeLoc;
+			tNodeLoc = G.append_child(candidateNodeLoc, t);
+
+			// ALICE TODO: compatibility check. Normally B nodes should be geographically compatible before being added.
+
+			// Asymmetric River Nodes
+			RiverNode b1;
+			b1.node_type = INSTANTIATED;
+			b1.pi = t.pi;
+			vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+			b1.position = t.position + expansionDirection_b1;
+			// Append this node as child of terminal node
+			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
+
+			RiverNode b2;
+			b2.node_type = INSTANTIATED;
+			b2.pi = t.pi - 2;
+			vec3 expansionDirection_b2 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+			b2.position = t.position + expansionDirection_b2;
+			// Append this node as child of terminal node
+			G.append_child(tNodeLoc, b2); // if (b2.isCompatible)
+
+			// Update list of candidate nodes
+			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
+			candidateNodes.push_back(b2);
+			candidateNodes.push_back(b1);
 		}
+
 		// River growth (no branching)
 		if (expansionType == EXPANSION_PC)
 		{
-			// expand PC
+			// Terminal Node
+			RiverNode t;
+			t.node_type = TERMINAL;
+			t.pi = candidateNode.pi;
+			vec3 expansionDirection_t = getGradientVector(candidateNode) + getSlopeVector(candidateNode) + getXZJitter();
+			t.position = candidateNode.position + expansionDirection_t;
+
+			// Append terminal node as child of candidate node
+			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
+			tree<RiverNode>::iterator tNodeLoc;
+			tNodeLoc = G.append_child(candidateNodeLoc, t);
+
+			// ALICE TODO: compatibility check. Normally B nodes should be geographically compatible before being added.
+
+			// Single river node growth
+			RiverNode b1;
+			b1.node_type = INSTANTIATED;
+			b1.pi = t.pi - 1;
+			vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+			b1.position = t.position + expansionDirection_b1;
+			// Append this node as child of terminal node
+			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
+
+			// Update list of candidate nodes
+			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
+			candidateNodes.push_back(b1);
 		}
-		// Symmetric Horton-Strahler junction ALICE TODO
+
+		// Symmetric Horton-Strahler junction
 		if (expansionType == EXPANSION_PS)
 		{
 			// Terminal Node
@@ -509,8 +570,7 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			tree<RiverNode>::iterator tNodeLoc;
 			tNodeLoc = G.append_child(candidateNodeLoc, t);
 
-
-			// Skipping compatibility check. Normally B nodes should be geographically compatible before being added ALICE TODO
+			// ALICE TODO: compatibility check. Normally B nodes should be geographically compatible before being added.
 
 			// Symmetric River Nodes
 			RiverNode b1;
@@ -559,5 +619,5 @@ EXPANSION_TYPE_T RiverNetworkNode::chooseExpansionType()
 		expansionType = EXPANSION_PS;
 
 	//return expansionType;
-	return EXPANSION_PS; // TESTING
+	return EXPANSION_PC; // TESTING
 }
