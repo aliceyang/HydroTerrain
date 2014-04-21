@@ -1,16 +1,17 @@
 HydroTerrain
+
 CIS 660 Authoring Tool
+
 Alice Yang | Cheng Xie
  
-!!!ALWAYS TEST YOUR CODE BEFORE CHECKING IN. DO NOT SUBMIT CODE WITH ERRORS!!!
  
-========== NOTES ==========
+## H2 NOTES 
 Documentation for this tool can be found in _README.txt in /HydroTerrain
 
+---
 
 
-
-========== TASKS ==========
+## H2 TASKS 
 Task List for Alpha: 
 All of task 1.
 Tasks 2.1, 2.3, 2.6
