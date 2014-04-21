@@ -58,7 +58,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2012|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\Maya2012\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\NVoronoi;..\HydroTerrain;..\HydroTerrain\tree;$(MAYA_PATH)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_AFXDLL;_MBCS;NT_PLUGIN;REQUIRE_IOSTREAM;Bits64_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeaderOutputFile>$(ConfigurationName)/RiverNetworkNode.pch</PrecompiledHeaderOutputFile>
@@ -68,7 +68,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>Foundation.lib;OpenMaya.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\Maya2012\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(MAYA_PATH)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OutputFile>$(ConfigurationName)\RiverNetworkNode.mll</OutputFile>
       <ImportLibrary>$(ConfigurationName)/RiverNetworkNode.lib</ImportLibrary>
       <ProgramDatabaseFile>$(ConfigurationName)/RiverNetworkNode.pdb</ProgramDatabaseFile>
@@ -142,11 +142,16 @@
     <ClInclude Include="..\HydroTerrain\tree\tree.hpp" />
     <ClInclude Include="..\HydroTerrain\tree\tree_util.hpp" />
     <ClInclude Include="..\HydroTerrain\vec.h" />
+    <ClInclude Include="..\NVoronoi\VoronoiManager.h" />
     <ClInclude Include="RiverNetworkNode.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\HydroTerrain\RiverNode.cpp" />
     <ClCompile Include="..\HydroTerrain\vec.cpp" />
+    <ClCompile Include="..\NVoronoi\Voronoi.cpp" />
+    <ClCompile Include="..\NVoronoi\VoronoiManager.cpp" />
+    <ClCompile Include="..\NVoronoi\VoronoiPoly.cpp" />
+    <ClCompile Include="..\NVoronoi\VParabola.cpp" />
     <ClCompile Include="pluginMain.cpp" />
     <ClCompile Include="RiverNetworkNode.cpp" />
   </ItemGroup>
