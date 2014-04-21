@@ -56,6 +56,7 @@ protected:
 	vec3 getGradientVector(const RiverNode &node);
 	vec3 getXZJitter();
 	EXPANSION_TYPE_T chooseExpansionType();
+	bool isNodeCompatible(const RiverNode &node, const tree<RiverNode> &G);
 };
 
 #endif

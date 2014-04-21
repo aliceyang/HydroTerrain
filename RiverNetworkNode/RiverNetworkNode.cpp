@@ -252,10 +252,12 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		expandCandidateNode(candidateNode, G, candidateNodes);
 
 		// TESTING
-		for (int i = 0; i < 6; i++)
+		int i = 0;
+		while (candidateNodes.size() > 0 && i < 20)
 		{
 			selectCandidateNode(candidateNodes, candidateNode);
 			expandCandidateNode(candidateNode, G, candidateNodes);
+			i++;
 		}
 		
 		// SANITY CHECK
@@ -436,8 +438,8 @@ vec3 RiverNetworkNode::getGradientVector(const RiverNode &node)
 vec3 RiverNetworkNode::getXZJitter()
 	// Returns a vec3 with small random values in X and Z fields
 {
-	//return vec3 (rand()%3-1.5, 0, rand()%3-1.5);
-	return vec3 (0,0,0);
+	return vec3 (rand()%3-1.5, 0, rand()%3-1.5);
+	//return vec3 (0,0,0);
 }
 
 
@@ -475,7 +477,7 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 {
 	if (candidateNode.pi == 1)
 	{
-		// Filling (ALICE TODO)
+		// Filling
 		// For now lets just stop expansion and remove the candidate node from the vector
 		// http://stackoverflow.com/questions/39912/how-do-i-remove-an-item-from-a-stl-vector-with-a-certain-value
 		candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
@@ -494,34 +496,43 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			vec3 expansionDirection_t = getGradientVector(candidateNode) + getSlopeVector(candidateNode) + getXZJitter();
 			t.position = candidateNode.position + expansionDirection_t;
 
-			// Append terminal node as child of candidate node
-			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
-			tree<RiverNode>::iterator tNodeLoc;
-			tNodeLoc = G.append_child(candidateNodeLoc, t);
+			// Append terminal node as child of candidate node if compatibility check passes
+			if (isNodeCompatible(t, G))
+			{
+				tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
+				tree<RiverNode>::iterator tNodeLoc;
+				tNodeLoc = G.append_child(candidateNodeLoc, t);
 
-			// ALICE TODO: compatibility check. Normally B nodes should be geographically compatible before being added.
+				// Asymmetric River Nodes
+				RiverNode b1;
+				b1.node_type = INSTANTIATED;
+				b1.pi = t.pi;
+				vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+				b1.position = t.position + expansionDirection_b1;
 
-			// Asymmetric River Nodes
-			RiverNode b1;
-			b1.node_type = INSTANTIATED;
-			b1.pi = t.pi;
-			vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
-			b1.position = t.position + expansionDirection_b1;
-			// Append this node as child of terminal node
-			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
+				// Append this node as child of terminal node if compatibility check passes
+				if (isNodeCompatible(b1, G))
+				{
+					G.append_child(tNodeLoc, b1);
+					candidateNodes.push_back(b1);
+				}
 
-			RiverNode b2;
-			b2.node_type = INSTANTIATED;
-			b2.pi = t.pi - 2;
-			vec3 expansionDirection_b2 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
-			b2.position = t.position + expansionDirection_b2;
-			// Append this node as child of terminal node
-			G.append_child(tNodeLoc, b2); // if (b2.isCompatible)
+				RiverNode b2;
+				b2.node_type = INSTANTIATED;
+				b2.pi = t.pi - 2;
+				vec3 expansionDirection_b2 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+				b2.position = t.position + expansionDirection_b2;
+
+				// Append this node as child of terminal node if compatibility check passes
+				if (isNodeCompatible(b2, G))
+				{
+					G.append_child(tNodeLoc, b2);
+					candidateNodes.push_back(b2);
+				}			
+			}
 
 			// Update list of candidate nodes
 			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
-			candidateNodes.push_back(b2);
-			candidateNodes.push_back(b1);
 		}
 
 		// River growth (no branching)
@@ -534,25 +545,30 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			vec3 expansionDirection_t = getGradientVector(candidateNode) + getSlopeVector(candidateNode) + getXZJitter();
 			t.position = candidateNode.position + expansionDirection_t;
 
-			// Append terminal node as child of candidate node
-			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
-			tree<RiverNode>::iterator tNodeLoc;
-			tNodeLoc = G.append_child(candidateNodeLoc, t);
+			// Append terminal node as child of candidate node if compatibility check passes
+			if (isNodeCompatible(t, G))
+			{
+				tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
+				tree<RiverNode>::iterator tNodeLoc;
+				tNodeLoc = G.append_child(candidateNodeLoc, t);
+			
+				// Single river node growth
+				RiverNode b1;
+				b1.node_type = INSTANTIATED;
+				b1.pi = t.pi - 1;
+				vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+				b1.position = t.position + expansionDirection_b1;
 
-			// ALICE TODO: compatibility check. Normally B nodes should be geographically compatible before being added.
-
-			// Single river node growth
-			RiverNode b1;
-			b1.node_type = INSTANTIATED;
-			b1.pi = t.pi - 1;
-			vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
-			b1.position = t.position + expansionDirection_b1;
-			// Append this node as child of terminal node
-			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
+				// Append this node as child of terminal node if compatibility check passes
+				if (isNodeCompatible(b1, G))
+				{
+					G.append_child(tNodeLoc, b1);
+					candidateNodes.push_back(b1);
+				} 
+			}	
 
 			// Update list of candidate nodes
 			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
-			candidateNodes.push_back(b1);
 		}
 
 		// Symmetric Horton-Strahler junction
@@ -565,12 +581,10 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			vec3 expansionDirection_t = getGradientVector(candidateNode) + getSlopeVector(candidateNode) + getXZJitter();
 			t.position = candidateNode.position + expansionDirection_t;
 
-			// Append terminal node as child of candidate node
+			// Append terminal node as child of candidate node if compatibility check passes
 			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
 			tree<RiverNode>::iterator tNodeLoc;
 			tNodeLoc = G.append_child(candidateNodeLoc, t);
-
-			// ALICE TODO: compatibility check. Normally B nodes should be geographically compatible before being added.
 
 			// Symmetric River Nodes
 			RiverNode b1;
@@ -578,16 +592,18 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			b1.pi = t.pi - 1;
 			vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
 			b1.position = t.position + expansionDirection_b1;
-			// Append this node as child of terminal node
-			G.append_child(tNodeLoc, b1); // if (b1.isCompatible)
+
+			// Append this node as child of terminal node if compatibility check passes
+			G.append_child(tNodeLoc, b1); 
 
 			RiverNode b2;
 			b2.node_type = INSTANTIATED;
 			b2.pi = t.pi - 1;
 			vec3 expansionDirection_b2 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
 			b2.position = t.position + expansionDirection_b2;
-			// Append this node as child of terminal node
-			G.append_child(tNodeLoc, b2); // if (b2.isCompatible)
+
+			// Append this node as child of terminal node if compatibility check passes
+			G.append_child(tNodeLoc, b2);
 
 			// Update list of candidate nodes
 			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
@@ -619,5 +635,20 @@ EXPANSION_TYPE_T RiverNetworkNode::chooseExpansionType()
 		expansionType = EXPANSION_PS;
 
 	//return expansionType;
-	return EXPANSION_PC; // TESTING
+	return EXPANSION_PA; // TESTING
+}
+
+bool RiverNetworkNode::isNodeCompatible(const RiverNode &node, const tree<RiverNode> &G)
+{
+	// First check node against bounding box
+	vec3 pos = node.position;
+	if (pos[0] < bboxMin[0] || 
+		pos[2] < bboxMin[2] ||
+		pos[0] > bboxMax[0] ||
+		pos[2] > bboxMax[2])
+	{
+		return false;
+	}
+
+	return true;
 }
