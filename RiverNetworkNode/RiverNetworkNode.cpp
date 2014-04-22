@@ -582,33 +582,42 @@ void RiverNetworkNode::expandCandidateNode(RiverNode &candidateNode, tree<RiverN
 			t.position = candidateNode.position + expansionDirection_t;
 
 			// Append terminal node as child of candidate node if compatibility check passes
-			tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
-			tree<RiverNode>::iterator tNodeLoc;
-			tNodeLoc = G.append_child(candidateNodeLoc, t);
+			if (isNodeCompatible(t, G))
+			{
+				tree<RiverNode>::iterator candidateNodeLoc = find (G.begin(), G.end(), candidateNode);
+				tree<RiverNode>::iterator tNodeLoc;
+				tNodeLoc = G.append_child(candidateNodeLoc, t);
 
-			// Symmetric River Nodes
-			RiverNode b1;
-			b1.node_type = INSTANTIATED;
-			b1.pi = t.pi - 1;
-			vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
-			b1.position = t.position + expansionDirection_b1;
+				// Symmetric River Nodes
+				RiverNode b1;
+				b1.node_type = INSTANTIATED;
+				b1.pi = t.pi - 1;
+				vec3 expansionDirection_b1 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+				b1.position = t.position + expansionDirection_b1;
 
-			// Append this node as child of terminal node if compatibility check passes
-			G.append_child(tNodeLoc, b1); 
+				// Append this node as child of terminal node if compatibility check passes
+				if (isNodeCompatible(b1, G))
+				{
+					G.append_child(tNodeLoc, b1); 
+					candidateNodes.push_back(b1);
+				}
 
-			RiverNode b2;
-			b2.node_type = INSTANTIATED;
-			b2.pi = t.pi - 1;
-			vec3 expansionDirection_b2 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
-			b2.position = t.position + expansionDirection_b2;
+				RiverNode b2;
+				b2.node_type = INSTANTIATED;
+				b2.pi = t.pi - 1;
+				vec3 expansionDirection_b2 = getGradientVector(t) + getSlopeVector(t) + getXZJitter();
+				b2.position = t.position + expansionDirection_b2;
 
-			// Append this node as child of terminal node if compatibility check passes
-			G.append_child(tNodeLoc, b2);
+				// Append this node as child of terminal node if compatibility check passes
+				if (isNodeCompatible(b2, G))
+				{
+					G.append_child(tNodeLoc, b2);
+					candidateNodes.push_back(b2);
+				}
+			}
 
 			// Update list of candidate nodes
 			candidateNodes.erase(std::remove(candidateNodes.begin(), candidateNodes.end(), candidateNode), candidateNodes.end());
-			candidateNodes.push_back(b2);
-			candidateNodes.push_back(b1);
 		}
 	}
 }
@@ -635,7 +644,7 @@ EXPANSION_TYPE_T RiverNetworkNode::chooseExpansionType()
 		expansionType = EXPANSION_PS;
 
 	//return expansionType;
-	return EXPANSION_PA; // TESTING
+	return EXPANSION_PS; // TESTING
 }
 
 bool RiverNetworkNode::isNodeCompatible(const RiverNode &node, const tree<RiverNode> &G)
