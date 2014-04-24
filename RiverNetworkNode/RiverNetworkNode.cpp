@@ -437,7 +437,6 @@ vec3 RiverNetworkNode::getXZJitter()
 	// Returns a vec3 with small random values in X and Z fields
 {
 	return vec3 (rand()%3-1.5, 0, rand()%3-1.5);
-	//return vec3 (0,0,0);
 }
 
 
@@ -641,8 +640,7 @@ EXPANSION_TYPE_T RiverNetworkNode::chooseExpansionType()
 	else if (p <= cumulativePS)
 		expansionType = EXPANSION_PS;
 
-	//return expansionType;
-	return EXPANSION_PS; // TESTING
+	return expansionType;
 }
 
 bool RiverNetworkNode::isNodeCompatible(const RiverNode &node, const tree<RiverNode> &G)
