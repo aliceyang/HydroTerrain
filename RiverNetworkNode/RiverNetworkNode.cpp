@@ -215,8 +215,6 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		McheckErr(returnStatus, "ERROR getting riverSlopeFile data handle\n");
 		MString riverSlopeFileValue = riverSlopeFileData.asString();
 		riverSlopeFilePath = riverSlopeFileValue.asChar();
-		riverSlopeFilePath = "../HydroTerrain/img/grey.bmp"; // ALICE TODO remove this later
-
 
 		// **************************
 		//  RIVER NETWORK GENERATION
@@ -347,7 +345,7 @@ double RiverNetworkNode::getSlopeValue(const RiverNode &node)
 	ratioX = (pos[0]-bboxMin[0])/(bboxMax[0]-bboxMin[0]);
 	ratioZ = (pos[2]-bboxMin[2])/(bboxMax[2]-bboxMin[2]);
 	
-	CImg<double> src("../HydroTerrain/img/grey.bmp"); // TODO should source from riverSlopeFilePath
+	CImg<double> src(riverSlopeFilePath.c_str());
 	imgWidth = src.width() - 1; // convert to 0-indexed
 	imgHeight = src.height() - 1;
 
@@ -386,7 +384,7 @@ vec3 RiverNetworkNode::getGradientVector(const RiverNode &node)
 	ratioX = (pos[0]-bboxMin[0])/(bboxMax[0]-bboxMin[0]);
 	ratioZ = (pos[2]-bboxMin[2])/(bboxMax[2]-bboxMin[2]);
 
-	CImg<double> src("../HydroTerrain/img/grey.bmp"); // should source from riverSlopeFilePath
+	CImg<double> src(riverSlopeFilePath.c_str()); 
 	imgWidth = src.width() - 1; // convert to 0-indexed
 	imgHeight = src.height() - 1;
 
