@@ -53,8 +53,8 @@
     <OutDir>$(ConfigurationName)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2012|x64'">
-    <IntDir>$(ConfigurationName)</IntDir>
-    <OutDir>$(ConfigurationName)</OutDir>
+    <IntDir>$(Configuration)</IntDir>
+    <OutDir>$(Configuration)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2012|Win32'">
     <ClCompile>
@@ -115,7 +115,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_2012|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\Autodesk\Maya2012\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\HydroTerrain;..\HydroTerrain\tree;..\HydroTerrain\NVoronoi\glm;..\HydroTerrain\CGAL Install\include;..\HydroTerrain\gmp\include;$(MAYA_PATH)include;$(BOOST_PATH);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_AFXDLL;_MBCS;NT_PLUGIN;REQUIRE_IOSTREAM;Bits64_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeaderOutputFile>$(ConfigurationName)/RiverNetworkNode.pch</PrecompiledHeaderOutputFile>
@@ -124,8 +124,8 @@
       <AdditionalOptions>/GR /GS /EHsc /I "."  /c %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\Maya2012\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;libgmp-10.lib;libmpfr-4.lib;boost_chrono-vc100-mt-1_51.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_PATH)lib;..\HydroTerrain\CGAL Install\lib;..\HydroTerrain\gmp\lib;$(MAYA_PATH)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OutputFile>$(ConfigurationName)\RiverNetworkNode.mll</OutputFile>
       <ImportLibrary>$(ConfigurationName)/RiverNetworkNode.lib</ImportLibrary>
       <ProgramDatabaseFile>$(ConfigurationName)/RiverNetworkNode.pdb</ProgramDatabaseFile>
