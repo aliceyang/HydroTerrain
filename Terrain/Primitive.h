@@ -9,11 +9,11 @@ class Primitive
 public:
 
 	float radius;
-	int samples;
-
+	Point_2 center;
 
 	Primitive();
-	Primitive(int nSamples);
+	Primitive(double x, double y);
+	Primitive(double x, double y, double nRadius);
 	~Primitive();
 };
 

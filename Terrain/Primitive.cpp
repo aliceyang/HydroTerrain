@@ -5,11 +5,15 @@ Primitive::Primitive()
 {
 }
 
-Primitive::Primitive(int nSamples)
+Primitive::Primitive(double x, double y)
 {
-	samples = 10;
-	
-	//radius = pow(2 * sqrt(3.0) * samples, -0.5);
+	center = Point_2(x,y);
+}
+
+Primitive::Primitive(double x, double y, double nRadius)
+{
+	center = Point_2(x,y);
+	radius = nRadius;
 }
 
 Primitive::~Primitive()

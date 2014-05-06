@@ -115,7 +115,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_2012|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\HydroTerrain;..\HydroTerrain\tree;..\HydroTerrain\NVoronoi\glm;..\HydroTerrain\CGAL Install\include;..\HydroTerrain\gmp\include;$(MAYA_PATH)include;$(BOOST_PATH);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Terrain;..\HydroTerrain;..\HydroTerrain\tree;..\HydroTerrain\NVoronoi\glm;..\HydroTerrain\CGAL Install\include;..\HydroTerrain\gmp\include;$(MAYA_PATH)include;$(BOOST_PATH);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_AFXDLL;_MBCS;NT_PLUGIN;REQUIRE_IOSTREAM;Bits64_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeaderOutputFile>$(ConfigurationName)/RiverNetworkNode.pch</PrecompiledHeaderOutputFile>
@@ -143,6 +143,7 @@
     <ClInclude Include="..\HydroTerrain\tree\tree_util.hpp" />
     <ClInclude Include="..\HydroTerrain\vec.h" />
     <ClInclude Include="..\NVoronoi\VoronoiManager.h" />
+    <ClInclude Include="..\Terrain\clipper.hpp" />
     <ClInclude Include="RiverNetworkNode.h" />
   </ItemGroup>
   <ItemGroup>
@@ -152,6 +153,7 @@
     <ClCompile Include="..\NVoronoi\VoronoiManager.cpp" />
     <ClCompile Include="..\NVoronoi\VoronoiPoly.cpp" />
     <ClCompile Include="..\NVoronoi\VParabola.cpp" />
+    <ClCompile Include="..\Terrain\clipper.cpp" />
     <ClCompile Include="pluginMain.cpp" />
     <ClCompile Include="RiverNetworkNode.cpp" />
   </ItemGroup>

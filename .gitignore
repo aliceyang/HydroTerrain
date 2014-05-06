@@ -15,6 +15,10 @@ Win32/
 *.suo
 *.user
 *.sln.docstates
+*.tlog
+*.lastbuildstate
+*.cache
+*.unsuccessfulbuild
 
 # Build results
 [Dd]ebug/

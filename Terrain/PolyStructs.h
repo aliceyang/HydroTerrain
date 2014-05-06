@@ -4,21 +4,56 @@
 
 #include "CGALHeaders.h"
 #include "Primitive.h"
+#include "clipper.hpp"
 #include <random>
 #include <vector>
 #include <math.h>
+#include <random>
+#include <algorithm>
 
+struct PolyPoint
+{
+	Point_2 xzPoint;
+	double height;
+
+	PolyPoint()
+	{
+	}
+
+	PolyPoint(Point_2 inPoint)
+	{
+		xzPoint = inPoint;
+		height = 0.0;
+	}
+
+	PolyPoint(double x, double y)
+	{
+		Point_2 temp(x,y);
+		xzPoint = temp;
+		height = 0.0;
+	}
+
+	PolyPoint(Point_2 inPoint, double nHeight)
+	{
+		xzPoint = inPoint;
+		height = nHeight;
+	}
+
+	bool operator <(const PolyPoint &p) const {
+		return xzPoint.x() < p.xzPoint.x() || (xzPoint.x() == p.xzPoint.x() && xzPoint.y() < p.xzPoint.y());
+	}
+};
 
 /** PolyEdge consists of two Points **/
 struct PolyEdge
 {
 public:
 
-	Point_2 start;
-	Point_2 end;
+	PolyPoint start;
+	PolyPoint end;
 	bool infinite;
 
-	PolyEdge(Point_2 nStart, Point_2 nEnd)
+	PolyEdge(PolyPoint nStart, PolyPoint nEnd)
 	{
 		start = nStart;
 		end = nEnd;
@@ -60,34 +95,60 @@ public:
 class PolyFace
 {
 public:
-	Point_2 inputPoint;
-	Point_2 center;
+	PolyPoint inputPoint; //the initial point (river network points)
+	PolyPoint center; //might not be needed, is not necessarily the same location as inputPoint
 
-	BoundingBox box;
+	BoundingBox box; //gives you minX, minY, maxX, and maxY of the bounding box surrounding the polygon.
 
-	bool outer;
+	bool outerPoly; //keeps track if the polygon is a polygon that's part of the contour, in this instance, the inputPoint is part of the pointList;
 	std::vector<PolyEdge> edgeList;
-	std::vector<Point_2> pointList;
+	std::vector<PolyPoint> pointList;
+	std::vector<PolyPoint> sortedPointList;
+	std::vector<PolyEdge> sortedEdgeList;
+
+	//USE THESE LISTS FOR POINTS AND EDGES!!!
+	std::vector<PolyPoint> constrainedPointList; //FINAL LIST TO BE USED
+	std::vector<PolyEdge> constrainedEdgeList;   //FINAL LIST TO BE USED
+
 	std::vector<Primitive> primitiveList;
+
 	int index;
 
 	int samples;
+	double diskDistance;
 
 	PolyFace();
-	PolyFace(Point_2 nInputPoint);
+	PolyFace(PolyPoint nInputPoint);
 	void AddEdge(PolyEdge nEdge);
-	void AddPoint(Point_2 nPoint);
-	void AddPrimitives();
-	void SetCenter(Point_2 nPoint);
+	void AddPoint(PolyPoint nPoint);
+	void AddPrimitives(int iterations);
+	void SetCenter(PolyPoint nPoint);
 	void SetIndex(int n);
+	void BuildBoundingBox();
 	void BuildPointList();
-	Point_2 GeneratePoint();
+	void BuildSortedEdgeList();
+	void BuildConstrainedEdgeList();
+	bool RayEdgeIntersect(PolyEdge first, PolyEdge second, double &resultX, double &resultY);
+
+
+	void ClipPolygon(PolyFace contour);
+
+	//double TwoDCross(Point_2 one, Point_2 two);
+
+	bool IsInPolygon(PolyPoint testPoint);
+	PolyPoint GeneratePoissonPoint();
 
 	void PrintEdges();	
 	void PrintPointList();
+	
+	std::vector<PolyPoint> CreateConvexHull(std::vector<PolyPoint> P);
+	double cross(const Point_2 &O, const Point_2 &A, const Point_2 &B);
+	//bool PolyFace::compare(double x, double y, Point_2 &p);
 
-
-
+	//NEEDED FOR CLIPPING
+	ClipperLib::Clipper clipper;
+	
 };
+
 
 #endif

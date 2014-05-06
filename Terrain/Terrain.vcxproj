@@ -110,6 +110,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="clipper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PolyStructs.cpp" />
     <ClCompile Include="Primitive.cpp" />
@@ -117,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CGALHeaders.h" />
+    <ClInclude Include="clipper.hpp" />
     <ClInclude Include="PolyStructs.h" />
     <ClInclude Include="Primitive.h" />
     <ClInclude Include="Terrain.h" />

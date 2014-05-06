@@ -47,6 +47,9 @@
     <ClCompile Include="..\NVoronoi\VParabola.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Terrain\clipper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RiverNetworkNode.h">
@@ -68,6 +71,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\NVoronoi\VoronoiManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Terrain\clipper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,6 +6,7 @@
 
 #include "CGALHeaders.h"
 #include "PolyStructs.h"
+#include "clipper.hpp"
 
 
 class Terrain
@@ -20,7 +21,7 @@ public:
 	bool DuplicatePoint(double x, double y);
 	void DoVoronoi();
 	void Terrain::print_endpoint(Halfedge_handle e, bool is_src);
-	void DoTriangulation();
+	//void DoTriangulation();
 
 	void PrintAllPoints();
 	void PrintPolyFaces();
@@ -35,9 +36,11 @@ public:
 
 	std::vector<PolyFace> polyFaces;
 
-	std::vector<Site_2> initialPoints; //initial points that are fed into Voronoi diagram.
-	std::vector<Site_2> allPoints;
+	std::vector<PolyPoint> initialPoints; //initial points that are fed into Voronoi diagram.
+	std::vector<PolyPoint> allPoints;
 
+	PolyFace contour;
+	int iterations;
 
 
 };
