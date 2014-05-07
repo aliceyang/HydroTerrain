@@ -128,6 +128,7 @@ public:
 	void BuildPointList();
 	void BuildSortedEdgeList();
 	void BuildConstrainedEdgeList();
+	void GetVertexHeights(std::vector<PolyPoint> originalPoints);
 	bool RayEdgeIntersect(PolyEdge first, PolyEdge second, double &resultX, double &resultY);
 
 

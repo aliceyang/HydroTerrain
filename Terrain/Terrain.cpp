@@ -24,6 +24,21 @@ void Terrain::AddPoint(double x, double y)
 
 }
 
+void Terrain::AddThreeDPoint(double x, double y, double z)
+{
+	//Site_2 point = new Site_2(x,y);
+	PolyPoint point(x,z);
+	point.height = y;
+	initialPoints.push_back(point);
+	//contour.AddPoint(point);
+	
+
+	//if (!DuplicatePoint(x,y))
+		//allPoints.push_back(point);
+
+
+}
+
 void Terrain::CreatePrimitives()
 {
 	//loop through each face and create primitives.
@@ -87,6 +102,7 @@ void Terrain::DoVoronoi()
 		//add this edge to corresponding polyFaces
 		for (int i = 0; i < polyFaces.size(); i++)
 		{
+
 			//if the up or down point is the inputPoint of a polygon, this edge belongs to that polygon.
 			if (e->up()->point() == polyFaces[i].inputPoint.xzPoint ||
 				e->down()->point() == polyFaces[i].inputPoint.xzPoint)
@@ -97,9 +113,15 @@ void Terrain::DoVoronoi()
 					xPoint = (e->up()->point().x() + e->down()->point().x()) / 2.0;
 					yPoint = (e->up()->point().y() + e->down()->point().y()) / 2.0;
 
+					//if (xPoint == 20 && yPoint == 10)
+					//{
+					//	std::cout << "IN HERE no target" << std::endl;
+					//	std::cout << e->source()->point().x() << " " << e->source()->point().y() << std::endl;
+					//}
 
 					//NEED TO CHECK IF EDGE TARGET IS PAST THE BOUNDING
-					polyFaces[i].AddEdge(PolyEdge(PolyPoint(e->source()->point()), PolyPoint(xPoint,yPoint)));
+					polyFaces[i].AddEdge(PolyEdge(e->source()->point(), e->source()->point()));
+					//polyFaces[i].AddEdge(PolyEdge(PolyPoint(e->source()->point()), PolyPoint(xPoint,yPoint)));
 					polyFaces[i].outerPoly = true;
 				}
 
@@ -108,7 +130,14 @@ void Terrain::DoVoronoi()
 				{					
 					xPoint = (e->up()->point().x() + e->down()->point().x()) / 2.0;
 					yPoint = (e->up()->point().y() + e->down()->point().y()) / 2.0;
-					polyFaces[i].AddEdge(PolyEdge(Point_2(xPoint,yPoint), e->target()->point()));
+
+					//if (xPoint == 20 && yPoint == 10)
+					//{
+					//	std::cout << "IN HERE no source" << std::endl;
+					//}
+
+					polyFaces[i].AddEdge(PolyEdge(e->target()->point(), e->target()->point()));
+					polyFaces[i].AddEdge(PolyEdge(e->target()->point(), e->target()->point()));
 					polyFaces[i].outerPoly = true;
 				}
 
@@ -129,7 +158,10 @@ void Terrain::DoVoronoi()
 	{
 		polyFaces[j].BuildPointList();
 		polyFaces[j].ClipPolygon(contour);
-		polyFaces[j].AddPrimitives(iterations);
+		polyFaces[j].GetVertexHeights(initialPoints);
+		//polyFaces[j].AddPrimitives(iterations);
+		polyFaces[j].BuildConstrainedEdgeList();
+		
 	}
 	
 	

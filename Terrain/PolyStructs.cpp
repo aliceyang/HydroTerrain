@@ -84,12 +84,12 @@ void PolyFace::AddPrimitives(int iterations)
 
 	}
 
-	for (int i = 0; i < primitiveList.size(); i++)
-	{
-		std::cout << primitiveList[i].center.x() << " " << primitiveList[i].center.y() << std::endl;
-	}
+	//for (int i = 0; i < primitiveList.size(); i++)
+	//{
+	//	std::cout << primitiveList[i].center.x() << " " << primitiveList[i].center.y() << std::endl;
+	//}
 
-	std::cout << std::endl;
+	//std::cout << std::endl;
 
 
 	//while (primitiveList.size() != samples)
@@ -288,7 +288,8 @@ void PolyFace::ClipPolygon(PolyFace contour)
 
 
 	BuildBoundingBox();
-	BuildConstrainedEdgeList();
+	//GetVertexHeights();
+	//BuildConstrainedEdgeList();
 
 	//for (int i = 0; i < constrainedPointList.size(); i++)
 	//{
@@ -301,13 +302,43 @@ void PolyFace::ClipPolygon(PolyFace contour)
 
 }
 
-//double PolyFace::TwoDCross(Point_2 one, Point_2 two)
-//{
-//	float result;
-//
-//	result = one.x() * two.y() - one.y() * two.x();
-//	return result;
-//}
+void PolyFace::GetVertexHeights(std::vector<PolyPoint> originalPoints)
+{
+	//At this point, constrained point list should be made.
+	for (int i = 0; i < constrainedPointList.size(); i++)
+	{
+		//PolyPoint A, B, C; //These will hold three closest points, but only really need their heights.
+		PolyPoint closest;
+		//double aDist, bDist, cDist = 100000.0; //some high value to easily be replaced.
+		double aDist = 100000.0;
+
+		double distanceSqr;
+		double xDist;
+		double yDist;
+
+		//Compare against all original points
+		for (int j = 0; j < originalPoints.size(); j++)
+		{
+
+			xDist = constrainedPointList[i].xzPoint.x() - originalPoints[j].xzPoint.x();
+			yDist = constrainedPointList[i].xzPoint.y() - originalPoints[j].xzPoint.y();
+
+			distanceSqr = xDist * xDist + yDist * yDist;
+
+			if (distanceSqr < aDist)
+			{
+				aDist = distanceSqr;
+				closest = originalPoints[j];
+			}
+
+		}
+
+		constrainedPointList[i].height = closest.height + 2.0;
+
+
+	}
+}
+
 void PolyFace::BuildConstrainedEdgeList()
 {
 	if (constrainedPointList.size() == 0)
@@ -317,28 +348,24 @@ void PolyFace::BuildConstrainedEdgeList()
 	{
 		if (i == constrainedPointList.size() - 1)
 		{
-			PolyPoint start(constrainedPointList[i].xzPoint);
-			PolyPoint end(constrainedPointList[0].xzPoint);
+			PolyPoint start = constrainedPointList[i];
+			PolyPoint end = constrainedPointList[0];
 
 			PolyEdge tempEdge(start,end);
 			constrainedEdgeList.push_back(tempEdge);
 			break;
 		}
 
-		PolyPoint start(constrainedPointList[i].xzPoint);
-		PolyPoint end(constrainedPointList[i + 1].xzPoint);
+		PolyPoint start = constrainedPointList[i];
+		PolyPoint end = constrainedPointList[i + 1];
 
 		PolyEdge tempEdge(start,end);
 		constrainedEdgeList.push_back(tempEdge);
 		//Point_2 
 	}
 
-	//for (int i = 0; i < constrainedEdgeList.size(); i++)
-	//{
-	//	std::cout << "Edge Start: " << constrainedEdgeList[i].start.xzPoint.x() << " " << constrainedEdgeList[i].start.xzPoint.y() 
-	//			  << "  Edge End: " << constrainedEdgeList[i].end.xzPoint.x()   << " " << constrainedEdgeList[i].end.xzPoint.y() << std::endl << std::endl;
-	//}
 }
+
 
 bool PolyFace::IsInPolygon(PolyPoint testPoint)
 {
@@ -362,7 +389,7 @@ bool PolyFace::IsInPolygon(PolyPoint testPoint)
 
 	if (crossCounter % 2 == 1)
 	{
-		std::cout << " IN POLY ";
+		//std::cout << " IN POLY ";
 		//point = tempPt;
 		return true;
 		//Primitive test;
@@ -424,6 +451,16 @@ void PolyFace::BuildPointList()
 	{
 		PolyPoint start = edgeList[i].start;
 		PolyPoint end = edgeList[i].end;
+
+		//if (start.xzPoint.x() == 20 & start.xzPoint.y() == 10)
+		//{
+		//	std::cout << "IN HERE" << std::endl;
+		//}
+
+		//if (end.xzPoint.x() == 20 & end.xzPoint.y() == 10)
+		//{
+		//	std::cout << "IN HERE" << std::endl;
+		//}
 
 		//loop through all points currently in the list, if point is already there, move on.
 		bool startExists = false;

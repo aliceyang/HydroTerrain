@@ -18,6 +18,7 @@ public:
 
 	//METHODS
 	void AddPoint(double x, double y);
+	void AddThreeDPoint(double x, double y, double z);
 	bool DuplicatePoint(double x, double y);
 	void DoVoronoi();
 	void Terrain::print_endpoint(Halfedge_handle e, bool is_src);
