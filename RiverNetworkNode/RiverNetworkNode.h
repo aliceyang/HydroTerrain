@@ -47,6 +47,7 @@ public:
 	static vec3 bboxMin;
 	static vec3 bboxMax;
 	static std::string riverSlopeFilePath;
+	static std::vector<RiverNode> contourNodes;
 
 protected:
 	void selectCandidateNode(std::vector<RiverNode> &candidateNodes, RiverNode &candidateNode);

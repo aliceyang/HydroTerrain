@@ -93,6 +93,7 @@ MObject		RiverNetworkNode::riverSlopeFile;
 std::string RiverNetworkNode::riverSlopeFilePath;
 vec3 RiverNetworkNode::bboxMax;
 vec3 RiverNetworkNode::bboxMin;
+std::vector<RiverNode> RiverNetworkNode::contourNodes;
 
 void* RiverNetworkNode::creator()
 	//
@@ -250,6 +251,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 			RiverNode r(vec3(pos.x, pos.y, pos.z));
 			r.node_type = CANDIDATE;
 			candidateNodes.push_back(r);
+			contourNodes.push_back(r);
 			G.insert(top, r);
 		}
 
