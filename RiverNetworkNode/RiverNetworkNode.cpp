@@ -89,7 +89,6 @@ MTypeId     RiverNetworkNode::id( 0x1 );
 MObject     RiverNetworkNode::inputCurve;        
 MObject     RiverNetworkNode::outputPoints;       
 MObject		RiverNetworkNode::riverSlopeFile;
-MObject		RiverNetworkNode::outputBranches;
 
 std::string RiverNetworkNode::riverSlopeFilePath;
 vec3 RiverNetworkNode::bboxMax;
@@ -135,10 +134,6 @@ MStatus RiverNetworkNode::initialize()
 	McheckErr(returnStatus, "ERROR creating RiverNetworkNode outputPoints attribute\n");
 	MAKE_OUTPUT(tAttr);
 
-	outputBranches = tAttr.create ("outputBranches", "ob", MFnArrayAttrsData::kDynArrayAttrs, &returnStatus);
-	McheckErr(returnStatus, "ERROR creating RiverNetworkNode outputBranches attribute\n");
-	MAKE_OUTPUT(tAttr);
-
 	// Add attributes
 	returnStatus = addAttribute( inputCurve );
 	McheckErr(returnStatus, "ERROR adding inputCurve attribute\n");
@@ -149,9 +144,6 @@ MStatus RiverNetworkNode::initialize()
 	returnStatus = addAttribute( outputPoints );
 	McheckErr(returnStatus, "ERROR adding outputPoints attribute\n");
 
-	returnStatus = addAttribute( outputBranches );
-	McheckErr(returnStatus, "ERROR adding outputBranches attribute\n");
-
 	// Set up a dependency between the input and the output.  This will cause
 	// the output to be marked dirty when the input changes.  The output will
 	// then be recomputed the next time the value of the output is requested.
@@ -160,12 +152,6 @@ MStatus RiverNetworkNode::initialize()
 	McheckErr(returnStatus, "ERROR in attributeAffects\n");
 
 	returnStatus = attributeAffects(riverSlopeFile, outputPoints);
-	McheckErr(returnStatus, "ERROR in attributeAffects\n");
-
-	returnStatus = attributeAffects(inputCurve, outputBranches);
-	McheckErr(returnStatus, "ERROR in attributeAffects\n");
-
-	returnStatus = attributeAffects(riverSlopeFile, outputBranches);
 	McheckErr(returnStatus, "ERROR in attributeAffects\n");
 
 	return MS::kSuccess;
@@ -188,7 +174,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 	// node doesn't know how to compute it, we must return 
 	// MS::kUnknownParameter.
 	// 
-	if( plug == outputPoints  || plug == outputBranches)
+	if( plug == outputPoints)
 	{
 		// Get a handle to the input attribute that we will need for the
 		// computation.  If the value is being supplied via a connection 
@@ -311,18 +297,6 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		MVectorArray positionArray = outputPointsAAD.vectorArray("position");
 		MDoubleArray idArray = outputPointsAAD.doubleArray("id");
 
-		// Data for outputBranches
-		MDataHandle outputBranchesHandle = data.outputValue( outputBranches );
-		MFnArrayAttrsData outputBranchesAAD;
-		MObject outputBranchesObj = outputBranchesAAD.create(&returnStatus);
-		McheckErr(returnStatus, "ERROR creating outputBranches object\n");
-
-		// Create vectors for position, id, scale and aimDirection for outputBranches
-		MVectorArray positionArrayBranches = outputPointsAAD.vectorArray("position");
-		MDoubleArray idArrayBranches = outputPointsAAD.doubleArray("id");
-		MVectorArray scaleArrayBranches = outputPointsAAD.vectorArray("position");
-		MVectorArray aimDirArrayBranches = outputPointsAAD.vectorArray("position");
-
 		// Traverse through all nodes in G tree and output their positions
 		int headCount = G.number_of_siblings(G.begin());
 		int headNum = 0;
@@ -337,6 +311,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 				RiverNode currNode = *it;
 
 				// Create edge from node's parent to itself
+				// TODO ALICE: Delete previously generated curves
 				if (it.node->parent != 0)
 				{
 					RiverNode parent = it.node->parent->data;

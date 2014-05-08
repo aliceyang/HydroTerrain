@@ -43,7 +43,6 @@ public:
 	static  MObject		inputCurve;		// User-created CV curve as river contour
 	static  MObject		outputPoints;	// Outputs array of locations for newly expanded nodes
 	static	MObject		riverSlopeFile;
-	static  MObject		outputBranches; // Outputs array of branches connecting the river nodes
 
 	static vec3 bboxMin;
 	static vec3 bboxMax;
