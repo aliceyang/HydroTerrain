@@ -8,7 +8,7 @@
 //
 
 #include "RiverNetworkNode.h"
-
+#include <maya/MGlobal.h>
 #include <maya/MFnPlugin.h>
 
 MStatus initializePlugin( MObject obj )
@@ -28,6 +28,12 @@ MStatus initializePlugin( MObject obj )
 	// Set name
 	plugin.setName("RiverNetworkNode");
 
+	// Load UI from MEL file
+	std::cout << "source \"" + plugin.loadPath() + "/ui.mel\"" << std::endl;
+	MGlobal::executeCommand("source \"" + plugin.loadPath() + "/ui.mel\"");
+	status = plugin.registerUI("createHydroTerrainUI", "deleteHydroTerrainUI");
+
+	// Register Node
 	status = plugin.registerNode( "RiverNetworkNode", RiverNetworkNode::id, RiverNetworkNode::creator,
 								  RiverNetworkNode::initialize );
 	if (!status) {

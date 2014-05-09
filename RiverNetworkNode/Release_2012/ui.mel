@@ -1,0 +1,68 @@
+// Alice Yang 
+// CIS 660 Authoring Tool HydroTerrain
+// This is the GUI code for the HydroTerrain maya plug-in
+
+// git status -uno (--untracked-files=no)
+// git commit -m "commit message" -a // commit with auto staging
+// git push origin master // Push commits to remote repo
+// git log origin/master..HEAD // To show commits that have not been pushed to remote repo
+
+
+//------------------------------------------------------------
+// Global variables to keep track of HydroTerrainCmd input values
+//------------------------------------------------------------
+global string $grammarPath;
+global string $grammar;
+global string $grammarScrollField;
+global string $iterationSlider;
+global string $stepSizeSlider;
+global string $angleSlider;
+global int $developing = true; // Set to false when ready to release
+
+//------------------------------------------------------------
+// Creates the main window HydroTerrain menu
+//------------------------------------------------------------
+global proc createHydroTerrainUI()
+{
+    global int $developing;
+    if ($developing && `menu -exists HydroTerrainMenu`)
+        deleteUI HydroTerrainMenu;
+    if (!`menu -exists HydroTerrainMenu`)
+    {
+        global string $gMainWindow;
+        setParent $gMainWindow;
+        menu -label "HydroTerrain" HydroTerrainMenu;
+            menuItem -label "Create HydroTerrain Node" -command createHydroTerrainNode;   
+            menuItem -divider true;
+            menuItem -label "Create River Network" -command createRiverNetwork;
+    }
+}
+
+//------------------------------------------------------------
+// Creates a River Network
+//------------------------------------------------------------
+global proc createRiverNetwork()
+{
+    polyCube;
+    scale -r 0.3 0.3 0.3;
+    instancer;
+    connectAttr pCube1.matrix instancer1.inputHierarchy[0];
+    connectAttr RiverNetworkNode1.outputPoints instancer1.inputPoints;
+}
+
+//------------------------------------------------------------
+// Creates an HydroTerrain Node
+//------------------------------------------------------------
+global proc createHydroTerrainNode()
+{
+    createNode RiverNetworkNode;
+    connectAttr -f curve1.worldSpace[0] RiverNetworkNode1.inputCurve; // curve is hardcoded 
+}
+
+//------------------------------------------------------------
+// Deletes the GUI dialog
+//------------------------------------------------------------
+global proc deleteHydroTerrainUI()
+{
+
+}
