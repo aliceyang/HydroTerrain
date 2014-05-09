@@ -1,6 +1,6 @@
 #include "RiverNode.h"
 
-#define DEFAULT_PRIORITY_INDEX 3
+#define DEFAULT_PRIORITY_INDEX 6
 #define DEFAULT_EDGE_LENGTH 5
 
 int RiverNode::id = 0;

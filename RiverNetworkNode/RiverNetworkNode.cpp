@@ -270,7 +270,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 
 		// TESTING
 		int i = 0;
-		while (candidateNodes.size() > 0 && i < 20)
+		while (candidateNodes.size() > 0 && i < 150)
 		{
 			selectCandidateNode(candidateNodes, candidateNode);
 			expandCandidateNode(candidateNode, G, candidateNodes);
@@ -287,6 +287,16 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		// computation will be done as a result of this call.
 		// 
 
+		// Delete old riverBranches before generating any new ones
+		std::stringstream ss;
+		ss  << "string $sel[] = `ls \"riverBranch*\"`;"
+			<< "int $selCount = size($sel);"
+			<< "if ($selCount > 0) { select -r \"riverBranch*\"; delete;};";
+		
+		string deleteRiverBranches = ss.str();
+		MString delRiverBranchesMString = deleteRiverBranches.c_str();
+		MGlobal::executeCommand(delRiverBranchesMString);
+
 		// Data for outputPoints
 		MDataHandle outputHandle = data.outputValue( outputPoints );
 		MFnArrayAttrsData outputPointsAAD;
@@ -300,6 +310,7 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 		// Traverse through all nodes in G tree and output their positions
 		int headCount = G.number_of_siblings(G.begin());
 		int headNum = 0;
+		int riverBranchCounter = 0;
 
 		// Iterate through the head nodes and iterate through each head node's tree/children
 		for (tree<RiverNode>::sibling_iterator iRoot = G.begin(); iRoot != G.end(); ++iRoot, ++headNum)
@@ -311,7 +322,6 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 				RiverNode currNode = *it;
 
 				// Create edge from node's parent to itself
-				// TODO ALICE: Delete previously generated curves
 				if (it.node->parent != 0)
 				{
 					RiverNode parent = it.node->parent->data;
@@ -320,11 +330,13 @@ MStatus RiverNetworkNode::compute( const MPlug& plug, MDataBlock& data )
 					std::stringstream sstm;
 					sstm << "curve -d 1 -p " << parentPos[0] << " " << parentPos[1] << " " << parentPos[2]
 					<< " -p " << currNode.position[0] << " " << currNode.position[1] << " " << currNode.position[2]
-					<<  " -k 0 -k 1;";
+					<< " -k 0 -k 1 -n riverBranch" << riverBranchCounter << ";";
 
 					string stringtest = sstm.str();
 					MString mstringTest = stringtest.c_str();
 					MGlobal::executeCommand(mstringTest);
+
+					++riverBranchCounter;
 				}
 
 				MPoint currNodePos(currNode.position[0],currNode.position[1],currNode.position[2]);
